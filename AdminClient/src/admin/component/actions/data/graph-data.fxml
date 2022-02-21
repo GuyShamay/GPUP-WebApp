@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="admin.component.actions.data.GraphDataController">
+  <columnConstraints>
+      <ColumnConstraints hgrow="NEVER" minWidth="10.0" prefWidth="10.0" />
+      <ColumnConstraints hgrow="SOMETIMES" />
+      <ColumnConstraints hgrow="NEVER" maxWidth="133.0" />
+      <ColumnConstraints hgrow="NEVER" maxWidth="137.0" minWidth="10.0" prefWidth="10.0" />
+      <ColumnConstraints hgrow="NEVER" maxWidth="137.0" />
+      <ColumnConstraints hgrow="NEVER" maxWidth="137.0" minWidth="10.0" prefWidth="10.0" />
+      <ColumnConstraints hgrow="NEVER" />
+    <ColumnConstraints hgrow="NEVER" />
+    <ColumnConstraints hgrow="NEVER" minWidth="10.0" prefWidth="10.0" />
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints minHeight="8.0" prefHeight="8.0" vgrow="NEVER" />
+      <RowConstraints vgrow="NEVER" />
+      <RowConstraints minHeight="8.0" prefHeight="8.0" vgrow="NEVER" />
+      <RowConstraints minHeight="20.0" prefHeight="30.0" vgrow="NEVER" />
+    <RowConstraints vgrow="ALWAYS" />
+      <RowConstraints minHeight="8.0" prefHeight="8.0" vgrow="NEVER" />
+      <RowConstraints maxHeight="50.0" minHeight="50.0" prefHeight="50.0" vgrow="NEVER" />
+    <RowConstraints vgrow="NEVER" />
+      <RowConstraints minHeight="8.0" prefHeight="8.0" vgrow="NEVER" />
+  </rowConstraints>
+   <children>
+      <Label id="lblHeader" text="Target Graph Information" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="1" />
+      <Separator prefWidth="200.0" GridPane.columnIndex="1" GridPane.columnSpan="7" GridPane.rowIndex="5" />
+      <TableView fx:id="graphTable" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.columnSpan="7" GridPane.rowIndex="3" GridPane.rowSpan="2">
+         <columns>
+            <TableColumn fx:id="targetCol" minWidth="60.0" prefWidth="0.0" text="Target" />
+            <TableColumn fx:id="typeCol" minWidth="50.0" prefWidth="3.0" text="Type" />
+            <TableColumn fx:id="requiredForCol" minWidth="80.0" prefWidth="0.0" text="Required" />
+            <TableColumn fx:id="dependsOnCol" minWidth="70.0" prefWidth="0.0" text="Depend" />
+            <TableColumn fx:id="dataCol" minWidth="50.0" prefWidth="265.0" text="Data" />
+         </columns>
+         <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+         </columnResizePolicy>
+      </TableView>
+      <Label text="Graph's Name:" GridPane.columnIndex="6" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
+      <Label fx:id="graphNameLabel" GridPane.columnIndex="7" GridPane.rowIndex="1" />
+      <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.columnSpan="7" GridPane.rowIndex="6">
+         <children>
+            <Label id="lblType" layoutX="267.0" layoutY="1.0" text="Independent" AnchorPane.rightAnchor="228.0" />
+            <Label id="lblType" layoutX="378.0" layoutY="1.0" text="Root" AnchorPane.rightAnchor="170.0" />
+            <Label id="lblType" layoutX="488.0" layoutY="1.0" text="Middle" AnchorPane.rightAnchor="90.0" />
+            <Label id="lblTotal" layoutX="17.0" layoutY="1.0" text="Total Targets" AnchorPane.leftAnchor="20.0" />
+            <Label id="lblType" layoutX="527.0" layoutY="1.0" text="Leaf" AnchorPane.rightAnchor="25.0" />
+            <Label id="lblTotalVal" fx:id="totalTargetsLabel" layoutX="57.0" layoutY="26.0" text="tt" AnchorPane.leftAnchor="57.0" />
+            <Label id="lblTypeVal" fx:id="independentLabel" layoutX="309.0" layoutY="26.0" text="i" AnchorPane.rightAnchor="267.0" />
+            <Label id="lblTypeVal" fx:id="rootLabel" layoutX="392.0" layoutY="26.0" text="r" AnchorPane.rightAnchor="182.0" />
+            <Label id="lblTypeVal" fx:id="midLabel" layoutX="460.0" layoutY="26.0" text="m" AnchorPane.rightAnchor="107.0" />
+            <Label id="lblTypeVal" fx:id="leafLabel" layoutX="539.0" layoutY="26.0" text="l" AnchorPane.rightAnchor="37.0" />
+         </children>
+      </AnchorPane>
+   </children>
+</GridPane>
