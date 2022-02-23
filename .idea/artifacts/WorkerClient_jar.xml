@@ -1,0 +1,15 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="WorkerClient:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/WorkerClient_jar</output-path>
+    <root id="archive" name="WorkerClient.jar">
+      <element id="module-output" name="WorkerClient" />
+      <element id="module-output" name="GpupDTO" />
+      <element id="module-output" name="Engine" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/3rd/okHttp/kotlin-stdlib-1.4.10.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/3rd/okHttp/okio-2.8.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/3rd/okHttp/okhttp-4.9.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/GPUPWebApp/web/WEB-INF/lib/gson-2.8.8/gson-2.8.8.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/3rd/okHttp/annotations-13.0.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

@@ -19,6 +19,7 @@ import java.io.*;
 import java.util.Collection;
 
 import static gpup.constants.Constants.WORKING_DIR;
+import static gpup.constants.Constants.WORKING_DIR_MAC;
 
 @WebServlet("/admin/upload-file")
 @MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 1024 * 1024 * 5, maxRequestSize = 1024 * 1024 * 5 * 5)
