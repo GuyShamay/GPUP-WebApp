@@ -1,9 +1,9 @@
 package old.component.task;
 
-import old.component.progressdata.ProgressData;
+import engine.progressdata.ProgressData;
 import old.component.target.FinishResult;
-import old.component.target.Result;
-import old.component.target.RunResult;
+import engine.target.Result;
+import engine.target.RunResult;
 import old.component.target.Target;
 import old.component.targetgraph.TargetGraph;
 import javafx.application.Platform;
@@ -151,7 +151,7 @@ public class RunTask extends Task<Boolean> {
     }
 
     private void runTarget(List<Target> waitingList, Target currentTarget) throws InterruptedException {
-        subTargetGraph.lockSerialSetOf(currentTarget);
+       /* subTargetGraph.lockSerialSetOf(currentTarget);
 
         currentTarget.setStartRunningTime();
         updateMessage("Target " + currentTarget.getName() + " Starting");
@@ -164,11 +164,11 @@ public class RunTask extends Task<Boolean> {
         }
         changeRunResult(RunResult.INPROCESS, currentTarget.getFinishResult(), currentTarget);
         updateGraphAfterTaskResult(waitingList, currentTarget);
-        subTargetGraph.unlockSerialSetOf(currentTarget);
+        subTargetGraph.unlockSerialSetOf(currentTarget);*/
     }
 
     private void changeRunResult(Result from, Result to, Target target) {
-        synchronized (changeRunResult) {
+       /* synchronized (changeRunResult) {
             if (from != to) {
                 if (to instanceof RunResult)
                     target.setRunResult((RunResult) to);
@@ -176,12 +176,12 @@ public class RunTask extends Task<Boolean> {
                     target.setFinishResult((FinishResult) to);
                 Platform.runLater(() -> progressData.move(from, to, target.getName()));
             }
-        }
+        }*/
     }
 
 
     private void updateGraphAfterTaskResult(List<Target> waitingList, Target currentTarget) {
-        synchronized (changeRunResult) {
+       /* synchronized (changeRunResult) {
             currentTarget.setRunResult(RunResult.FINISHED);
             if (currentTarget.getFinishResult().equals(FinishResult.FAILURE)) {
                 subTargetGraph.dfsTravelToUpdateSkippedList(currentTarget);
@@ -191,7 +191,7 @@ public class RunTask extends Task<Boolean> {
             } else {
                 subTargetGraph.updateTargetAdjAfterFinishWithoutFailure(progressData, waitingList, currentTarget);
             }
-        }
+        }*/
     }
 
     private void updateProgressBar(Target target) {

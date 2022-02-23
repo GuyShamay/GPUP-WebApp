@@ -38,19 +38,12 @@ public class RegisterServlet extends HttpServlet {
                     NewEngine engine = ServletUtils.getEngine(getServletContext());
                     synchronized (this) {
                         if (!engine.isRegistered(usernameFromSession, taskNameFromParameter)) {
-                            if (engine.isAllowedToRegister(taskNameFromParameter)) {
-                                engine.registerWorker(usernameFromSession, taskNameFromParameter);
-                                WorkerExecutionDTO workerExecutionDTO = engine.getWorkerExecution(taskNameFromParameter);
-                                String workerExecAsJson = GSON_INST.toJson(workerExecutionDTO);
-                                out.println(workerExecAsJson);
-                                out.flush();
-                                response.setStatus(HttpServletResponse.SC_OK);
-                            } else {
-                                String errorMessage = "Isn't allowed to register for task " + taskNameFromParameter;
-                                out.println(errorMessage);
-                                out.flush();
-                                response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
-                            }
+                            engine.registerWorker(usernameFromSession, taskNameFromParameter);
+                            WorkerExecutionDTO workerExecutionDTO = engine.getWorkerExecution(taskNameFromParameter);
+                            String workerExecAsJson = GSON_INST.toJson(workerExecutionDTO);
+                            out.println(workerExecAsJson);
+                            out.flush();
+                            response.setStatus(HttpServletResponse.SC_OK);
                         } else {
                             String errorMessage = "You already registered to task: " + taskNameFromParameter;
                             response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);

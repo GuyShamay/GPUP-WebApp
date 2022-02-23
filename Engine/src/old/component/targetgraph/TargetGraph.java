@@ -1,7 +1,7 @@
 package old.component.targetgraph;
 
 import engine.target.TargetsRelationType;
-import old.component.progressdata.ProgressData;
+import engine.progressdata.ProgressData;
 import engine.serialset.SerialSet;
 import old.component.target.*;
 import old.component.task.ProcessingType;
@@ -267,7 +267,7 @@ public class TargetGraph implements DirectableGraph, GraphActions {
                     currentTarget.addToJustOpenedList(target);
                 if (isAllAdjOfTargetFinishedWithoutFailure(target)) {
                     target.setRunResult(RunResult.WAITING);
-                    Platform.runLater(() -> progressData.move(RunResult.FROZEN, RunResult.WAITING, target.getName()));
+                    //Platform.runLater(() -> progressData.move(RunResult.FROZEN, RunResult.WAITING, target.getName()));
                     if (!waitingList.contains(target)) {
                         waitingList.add(target);
                         target.setStartWaitingTime();

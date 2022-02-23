@@ -12,6 +12,8 @@ import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
 import worker.client.component.dashboard.WorkerDashboardController;
 import worker.client.component.login.LoginController;
 import worker.client.util.Constants;
@@ -23,9 +25,10 @@ import worker.logic.task.WorkerExecution;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
-import static worker.client.util.Constants.LOGIN_PAGE_FXML_RESOURCE_LOCATION;
-import static worker.client.util.Constants.WORKER_DASHBOARD_FXML_RESOURCE_LOCATION;
+import static worker.client.util.Constants.*;
 
 
 public class WorkerMainController implements Closeable {
@@ -68,6 +71,7 @@ public class WorkerMainController implements Closeable {
     public void close() throws IOException {
         workerDashboardController.close();
         if (isLoggedIn) {
+            unregisterTasks();
             logout();
         }
     }
@@ -83,6 +87,14 @@ public class WorkerMainController implements Closeable {
 
     public IntegerProperty threadsProperty() {
         return threads;
+    }
+
+    private void unregisterTasks() throws IOException {
+        List<String> tasksList = worker.getTasksListByName();
+        String tasksAsJson = GSON_INST.toJson(tasksList);
+        RequestBody body = RequestBody.create(tasksAsJson, MediaType.parse("application/json"));
+
+        HttpClientUtil.runSyncWithBody(Constants.UNREGISTER, body);
     }
 
     // ------------------------------------------------------------------------------------------------------------

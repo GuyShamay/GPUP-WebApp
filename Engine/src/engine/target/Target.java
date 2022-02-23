@@ -129,7 +129,6 @@ public class Target implements Cloneable {
         startWaitingTime = Instant.now();
     }
 
-
     public void addDependOnTarget(Target target) {
         if (!dependsOnList.contains(target))
             dependsOnList.add(target);
@@ -162,11 +161,20 @@ public class Target implements Cloneable {
         return newTarget;
     }
 
+    public void clearHelpingLists() {
+        justOpenedList.clear();
+        skippedList.clear();
+    }
+
     public void setStartRunningTime(Instant startRunningTime) {
         this.startRunningTime = startRunningTime;
     }
 
     public void setStartWaitingTime(Instant startWaitingTime) {
         this.startWaitingTime = startWaitingTime;
+    }
+
+    public String getNameAndWorker() {
+        return name + " - " + "Test"; // NEED TO UPDATE: WORKER'S NAME
     }
 }

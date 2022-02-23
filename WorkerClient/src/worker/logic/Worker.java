@@ -19,7 +19,7 @@ public class Worker {
     private final IntegerProperty credit;
     private int busyThreads;
     private ExecutorService threadsExecutor;
-    private Map<String, WorkerExecution> workerExecutions;
+    private Map<String, WorkerExecution> workerExecutions; // list of registered tasks
     private final List<TaskTarget> targets;
     //private List<ExecutionDTO> listedExecutions;
 
@@ -79,4 +79,7 @@ public class Worker {
     }
 
 
+    public List<String> getTasksListByName() {
+        return new ArrayList<>(workerExecutions.keySet());
+    }
 }

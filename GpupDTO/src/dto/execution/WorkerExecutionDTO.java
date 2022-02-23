@@ -7,7 +7,7 @@ import engine.execution.Execution;
 public class WorkerExecutionDTO {
     private String name;
     private int workersCount;
-    private int progress;
+    private double progress;
     private int price;
     private DTOUtil.ExecutionTypeDTO type;
     private ConfigDTO executionDetails;
@@ -40,7 +40,7 @@ public class WorkerExecutionDTO {
         this.workersCount = workersCount;
     }
 
-    public int getProgress() {
+    public double getProgress() {
         return progress;
     }
 

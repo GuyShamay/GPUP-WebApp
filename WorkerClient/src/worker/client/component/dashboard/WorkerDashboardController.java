@@ -3,6 +3,7 @@ package worker.client.component.dashboard;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import dto.execution.ExecutionDTO;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -27,6 +28,7 @@ import javax.swing.text.html.HTML;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Objects;
 
 import static worker.client.util.Constants.TASKS_LIST_FXML_RESOURCE_LOCATION;
 import static worker.client.util.Constants.TASK_NAME;
@@ -117,38 +119,47 @@ public class WorkerDashboardController implements Closeable {
     }
 
     private void registerForTask() {
-        String finalUrl = HttpUrl
-                .parse(Constants.REGISTER)
-                .newBuilder()
-                .addQueryParameter(TASK_NAME, tasksListController.getSelectedTaskName())
-                .build()
-                .toString();
-        HttpClientUtil.runAsync(finalUrl, new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+        if (isAllowedToRegister(tasksListController.getSelectedTask())) {
+            String finalUrl = HttpUrl
+                    .parse(Constants.REGISTER)
+                    .newBuilder()
+                    .addQueryParameter(TASK_NAME, tasksListController.getSelectedTaskName())
+                    .build()
+                    .toString();
+            HttpClientUtil.runAsync(finalUrl, new Callback() {
+                @Override
+                public void onFailure(@NotNull Call call, @NotNull IOException e) {
 
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                if (response.code() != 200) {
-                    Platform.runLater(() -> {
-                        try {
-                            workerMainController.updateMessage(response.body().string(), true);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    });
-                } else {
-                    // add execution in worker
-                    String workerExecutionAsString = response.body().string();
-                    //JsonObject jsonObject = JsonParser.parseString(workerExecutionAsString).getAsJsonObject();
-                    System.out.println(workerExecutionAsString);
-                    workerMainController.registerForTask(JsonParser.parseString(workerExecutionAsString).getAsJsonObject());
-                    Platform.runLater(() -> workerMainController.updateMessage("Registered Successfully!", false));
                 }
-            }
-        });
+
+                @Override
+                public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                    if (response.code() != 200) {
+                        Platform.runLater(() -> {
+                            try {
+                                workerMainController.updateMessage(response.body().string(), true);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        });
+                    } else {
+                        // add execution in worker
+                        String workerExecutionAsString = response.body().string();
+                        //JsonObject jsonObject = JsonParser.parseString(workerExecutionAsString).getAsJsonObject();
+                        System.out.println(workerExecutionAsString);
+                        workerMainController.registerForTask(JsonParser.parseString(workerExecutionAsString).getAsJsonObject());
+                        Platform.runLater(() -> workerMainController.updateMessage("Registered Successfully!", false));
+                    }
+                }
+            });
+        } else {
+            updateMessage("It is not allowed to register to: " + tasksListController.getSelectedTaskName(), true);
+        }
+    }
+
+    private boolean isAllowedToRegister(ExecutionDTO selectedTask) {
+        String status = selectedTask.getStatus();
+        return Objects.equals(status, "New") || Objects.equals(status, "Paused") || Objects.equals(status, "Active");
     }
 
     @FXML

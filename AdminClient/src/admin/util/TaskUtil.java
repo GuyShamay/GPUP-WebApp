@@ -3,6 +3,7 @@ package admin.util;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import dto.execution.ExecutionDTO;
+import dto.execution.RunExecutionDTO;
 import dto.util.DTOUtil;
 
 import java.util.ArrayList;
@@ -34,22 +35,56 @@ public class TaskUtil {
                 executionDTO.setType(DTOUtil.ExecutionTypeDTO.valueOf(jsonObject.get("type").getAsString()));
             }
             if (jsonObject.has("progress")) {
-                executionDTO.setProgress(jsonObject.get("progress").getAsInt());
+                executionDTO.setProgress(jsonObject.get("progress").getAsDouble());
             }
             if (jsonObject.has("workers")) {
-                executionDTO.setWorkers(TaskUtil.parseToWorkersList(jsonObject.get("workers").getAsJsonArray()));
+                executionDTO.setWorkers(TaskUtil.parseToList(jsonObject.get("workers").getAsJsonArray()));
             }
 
         }
         return executionDTO;
     }
 
-    private static List<String> parseToWorkersList(JsonArray jsonArray) {
-        List<String> workers = new ArrayList<>();
-        jsonArray.forEach(jsonElement -> workers.add(jsonElement.getAsString()));
-        return workers;
+    private static List<String> parseToList(JsonArray jsonArray) {
+        List<String> list = new ArrayList<>();
+        jsonArray.forEach(jsonElement -> list.add(jsonElement.getAsString()));
+        return list;
     }
 
+    public static RunExecutionDTO parseToRunExecutionDTO(JsonObject jsonObject) {
+        RunExecutionDTO runExecution = new RunExecutionDTO();
+        if (jsonObject != null) {
+            if (jsonObject.has("status")) {
+                runExecution.setStatus(jsonObject.get("status").getAsString());
+            }
+            if (jsonObject.has("progress")) {
+                runExecution.setProgress(jsonObject.get("progress").getAsDouble());
+            }
+            if (jsonObject.has("frozen")) {
+                runExecution.setFrozen(parseToList(jsonObject.get("frozen").getAsJsonArray()));
+            }
+            if (jsonObject.has("waiting")) {
+                runExecution.setWaiting(parseToList(jsonObject.get("waiting").getAsJsonArray()));
+            }
+            if (jsonObject.has("inProcess")) {
+                runExecution.setInProcess(parseToList(jsonObject.get("inProcess").getAsJsonArray()));
+            }
+            if (jsonObject.has("skipped")) {
+                runExecution.setSkipped(parseToList(jsonObject.get("skipped").getAsJsonArray()));
+            }
+            if (jsonObject.has("failure")) {
+                runExecution.setFailure(parseToList(jsonObject.get("failure").getAsJsonArray()));
+            }
+            if (jsonObject.has("success")) {
+                runExecution.setSuccess(parseToList(jsonObject.get("success").getAsJsonArray()));
+            }
+            if (jsonObject.has("warnings")) {
+                runExecution.setWarnings(parseToList(jsonObject.get("warnings").getAsJsonArray()));
+            }
+            return runExecution;
+        }
+        return null;
+    }
 
     public static class Selections {
         public static enum TargetSelect {

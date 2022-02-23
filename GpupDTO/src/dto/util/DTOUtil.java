@@ -12,4 +12,10 @@ public abstract class DTOUtil {
         DependsOn,
         RequiredFor
     }
+
+    public static enum ExecutionControlDTO{
+        Pause,
+        Resume,
+        Stop
+    }
 }

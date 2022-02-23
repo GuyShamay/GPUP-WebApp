@@ -1,8 +1,8 @@
-package old.component.progressdata;
+package engine.progressdata;
 
-import old.component.target.FinishResult;
-import old.component.target.Result;
-import old.component.target.RunResult;
+import engine.target.FinishResult;
+import engine.target.Result;
+import engine.target.RunResult;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 

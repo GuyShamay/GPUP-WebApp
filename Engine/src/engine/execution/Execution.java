@@ -3,6 +3,10 @@ package engine.execution;
 import dto.execution.config.ConfigDTO;
 import dto.execution.config.ExecutionConfigDTO;
 import engine.graph.TargetGraph;
+import engine.progressdata.ProgressData;
+import engine.target.Target;
+import old.component.target.RunResult;
+import old.component.target.TargetType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,12 +22,22 @@ public class Execution {
     private ExecutionType type;
     private final List<String> workers;
     private ConfigDTO executionDetails;
+    private ProgressData progressData;
+
+    // Run Execution Managing Fields: (Not pass by DTO)
+    private boolean pause; // RESUME -> to false, PAUSE -> to true
+    private boolean play; // STOP -> to false, PLAY -> to true
+    private boolean isStarted; // PLAY -> to true
+    private List<Target> waitingList;
 
     public Execution() {
         status = ExecutionStatus.New;
         currentWorkersCount = 0;
         progress = 0;
+        progressData = new ProgressData();
         workers = new ArrayList<>();
+        play = false;
+        pause = false;
     }
 
 
@@ -37,8 +51,8 @@ public class Execution {
         this.executionDetails = executionDetails;
     }
 
-    public int getProgress() {
-        return 100 * (progress / taskGraph.getCount());
+    public double getProgress() {
+        return (double) progress / taskGraph.getCount();
     }
 
     public ExecutionType getType() {
@@ -136,7 +150,66 @@ public class Execution {
         taskGraph.checkValidIncremental();
     }
 
-    public boolean isAllowedToRegister() {
-        return status == ExecutionStatus.New || status == ExecutionStatus.Paused || status == ExecutionStatus.Active;
+    public ProgressData getProgressData() {
+        return progressData;
+    }
+
+    public void updateLeavesAndIndependentsToWaiting() {
+        taskGraph.updateLeavesAndIndependentToWaiting(progressData); // NTU: target.getNameAndWorker()
+        // DEBUG: progressData might not be updated...
+    }
+
+    public boolean isAllowedToPlay() {
+        return !isStarted;
+    }
+
+    private void initialize() {
+        if (!taskGraph.hasCircuit()) {
+            play = true;
+            status = ExecutionStatus.Active;
+            taskGraph.getTargetsListByName().forEach(targetName -> progressData.initToFrozen(targetName));
+            taskGraph.buildTransposeGraph();
+            taskGraph.clearJustOpenAndSkippedLists();
+            updateLeavesAndIndependentsToWaiting();
+            waitingList = taskGraph.getWaitingTargets();
+            return;
+        }
+        throw new RuntimeException("The task's graph has a circuit, can't run execution");
+    }
+
+    public void stop() {
+        play = false;
+        status = ExecutionStatus.Stopped;
+        System.out.println("stopped");
+
+    }
+
+    public void pause() {
+        pause = true;
+        status = ExecutionStatus.Paused;
+        System.out.println("paused");
+    }
+
+    public void resume() {
+        pause = false;
+        status = ExecutionStatus.Active;
+        System.out.println("resumed");
+    }
+
+    public void play() {
+        initialize(); // circuit ? throw runTimeException -> catch in servlet
+        isStarted = true;
+
+        System.out.println("on");
+
+        while (play) {
+            while (pause) {
+                // update message: PAUSED
+            }
+
+
+        }
+        System.out.println("done");
+        status = ExecutionStatus.Done;
     }
 }

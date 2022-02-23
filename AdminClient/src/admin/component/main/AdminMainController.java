@@ -11,14 +11,14 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import okhttp3.HttpUrl;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 import static admin.util.Constants.ADMIN_DASHBOARD_FXML_RESOURCE_LOCATION;
 import static admin.util.Constants.LOGIN_PAGE_FXML_RESOURCE_LOCATION;
@@ -29,6 +29,7 @@ public class AdminMainController implements Closeable {
     @FXML
     private Label usernameLabel;
 
+    private Map<String, Parent> tasksScreens;
     private StringProperty username;
     private Parent dashboardComponent;
     private AdminDashboardController adminDashboardController;
@@ -40,6 +41,7 @@ public class AdminMainController implements Closeable {
 
     public AdminMainController() {
         username = new SimpleStringProperty();
+        tasksScreens = new HashMap<>();
     }
 
     @FXML
@@ -98,7 +100,7 @@ public class AdminMainController implements Closeable {
         }
     }
 
-    public void switchToDashboard() {
+    public void setToDashboard() {
         setMainPanelTo(dashboardComponent);
         adminDashboardController.setActive();
         isLoggedIn = true;
@@ -123,5 +125,30 @@ public class AdminMainController implements Closeable {
 
     public String getUsername() {
         return username.get();
+    }
+
+    public boolean isTaskComponentCreated(String taskName) {
+        return tasksScreens.containsKey(taskName);
+    }
+
+    public void addTaskControlScreen(String taskName, Parent component) {
+        tasksScreens.put(taskName, component);
+    }
+
+    public Parent getTaskControlScreen(String taskName) {
+        if (tasksScreens.containsKey(taskName)) {
+            return tasksScreens.get(taskName);
+        }
+        return null;
+    }
+
+    public void switchToTaskControlScreen(String taskName) {
+        setMainPanelTo(tasksScreens.get(taskName));
+    }
+
+    public void switchToDashboard() {
+        setMainPanelTo(dashboardComponent);
+        adminDashboardController.resumeRefreshers();
+        adminDashboardController.setActionsPressed(false);
     }
 }

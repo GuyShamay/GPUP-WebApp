@@ -26,8 +26,8 @@
    <children>
       <AnchorPane fx:id="mainPanel" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="4" GridPane.rowSpan="2" />
       <Label text="GPUP System - Worker App" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
-      <Label fx:id="usernameLabel" prefHeight="21.0" prefWidth="0.0" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="1" />
-      <Label fx:id="messageLabel" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="3" />
+      <Label fx:id="usernameLabel" prefHeight="21.0" prefWidth="165.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.halignment="LEFT" GridPane.rowIndex="1" />
+      <Label fx:id="messageLabel" prefHeight="21.0" prefWidth="930.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="3" />
       <Label fx:id="totalCreditLabel" GridPane.columnIndex="3" GridPane.halignment="CENTER" GridPane.rowIndex="3" />
       <Label text="Total Credit:" GridPane.columnIndex="3" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
    </children>

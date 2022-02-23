@@ -2,6 +2,7 @@ package engine.graph;
 
 import dto.execution.config.ExecutionConfigDTO;
 import dto.target.TargetDTO;
+import engine.progressdata.ProgressData;
 import engine.target.RunResult;
 import engine.target.Target;
 import engine.target.TargetType;
@@ -178,8 +179,29 @@ public class TargetGraph implements Cloneable {
         }
     }
 
-    //-----------------------------------------------------------------------------------------
+    public void clearJustOpenAndSkippedLists() {
+        targetMap.forEach(((s, target) -> target.clearHelpingLists()));
+    }
 
+    public void updateLeavesAndIndependentToWaiting(ProgressData progressData) {
+        targetMap.forEach(((s, target) -> {
+            if (target.getType() == TargetType.Leaf || target.getType() == TargetType.Independent) {
+                target.setRunResult(RunResult.WAITING);
+                progressData.move(RunResult.FROZEN, RunResult.WAITING, target.getNameAndWorker());
+            }
+        }));
+    }
+    public List<Target> getWaitingTargets() {
+        List<Target> list = new ArrayList<>();
+        targetMap.forEach(((s, target) -> {
+            if (target.getRunResult().equals(RunResult.WAITING)) {
+                list.add(target);
+            }
+        }));
+        return list;
+    }
+
+    //-----------------------------------------------------------------------------------------
     // Find Circuit
 
     public boolean hasCircuit() {
@@ -218,7 +240,6 @@ public class TargetGraph implements Cloneable {
     }
 
     // -----------------------------------------------------------------------------------------
-
     // Find Path
 
     public List<String> findPaths(String src, TargetsRelationType type, String dest) {
@@ -280,7 +301,6 @@ public class TargetGraph implements Cloneable {
     }
 
     // -----------------------------------------------------------------------------------------
-
     // What If
 
     public List<TargetDTO> whatIfDTO(String src, TargetsRelationType type) {

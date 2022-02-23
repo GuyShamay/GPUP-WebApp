@@ -80,7 +80,7 @@ public class LoginController {
                 } else {
                     Platform.runLater(() -> {
                         adminMainController.updateUserName(userName);
-                        adminMainController.switchToDashboard();
+                        adminMainController.setToDashboard();
                     });
                 }
             }

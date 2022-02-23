@@ -137,7 +137,7 @@ public class GPUPEngine implements Engine {
         subTargetGraph.getTargetsMap().forEach(((s, target) -> {
             if (target.getType() == TargetType.Leaf || target.getType() == TargetType.Independent) {
                 target.setRunResult(RunResult.WAITING);
-                runTask.getProgressData().move(RunResult.FROZEN, RunResult.WAITING, target.getName());
+                // runTask.getProgressData().move(RunResult.FROZEN, RunResult.WAITING, target.getName());
             }
         }));
     }

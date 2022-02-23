@@ -39,6 +39,15 @@ public class HttpClientUtil {
         return call.execute();
     }
 
+    public static Response runSyncWithBody(String finalUrl, RequestBody body) throws IOException {
+        Request request = new Request.Builder()
+                .url(finalUrl)
+                .post(body)
+                .build();
+
+        Call call = HttpClientUtil.HTTP_CLIENT.newCall(request);
+        return call.execute();
+    }
     public static void shutdown() {
         System.out.println("Shutting down WORKER CLIENT");
         HTTP_CLIENT.dispatcher().executorService().shutdown();

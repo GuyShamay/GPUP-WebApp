@@ -14,7 +14,7 @@ public class ExecutionDTO {
     private String status;
     private int workersCount;
     private int price;
-    private int progress;
+    private double progress;
     private DTOUtil.ExecutionTypeDTO type;
     private List<String> workers; // ????
     private ConfigDTO config;
@@ -43,11 +43,11 @@ public class ExecutionDTO {
         return config;
     }
 
-    public int getProgress() {
+    public double getProgress() {
         return progress;
     }
 
-    public void setProgress(int progress) {
+    public void setProgress(double progress) {
         this.progress = progress;
     }
 

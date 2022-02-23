@@ -65,9 +65,7 @@ public class TasksListController implements Closeable {
 
     private Accordion taskConfigComponent;
     private final BooleanProperty autoUpdate;
-
     private final BooleanProperty createNewTask;
-
     private AdminDashboardController adminDashboardController;
     private Timer timer;
     private TasksListRefresher tasksListRefresher;
@@ -267,4 +265,11 @@ public class TasksListController implements Closeable {
         }
     }
 
+    public String getSelectedTaskCreatingUserName() {
+        return taskTable.getSelectionModel().getSelectedItem().getCreatingUser();
+    }
+
+    public ExecutionDTO getSelectedTask(){
+        return taskTable.getSelectionModel().getSelectedItem();
+    }
 }

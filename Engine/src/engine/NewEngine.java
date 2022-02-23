@@ -1,6 +1,7 @@
 package engine;
 
 import dto.execution.ExecutionDTO;
+import dto.execution.RunExecutionDTO;
 import dto.execution.WorkerExecutionDTO;
 import dto.execution.config.*;
 import dto.graph.GraphDTO;
@@ -19,19 +20,16 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class NewEngine {
     private Map<String, TargetGraph> graphsList;
-    private Map<String, Execution> taskList;
+    private Map<String, Execution> tasksList;
     private UserManager userManager;
 
     public NewEngine() {
         graphsList = new HashMap<>();
-        taskList = new HashMap<>();
+        tasksList = new HashMap<>();
         userManager = new UserManager();
         File workDir = new File("C:\\gpup-working-dir");
         workDir.mkdir();
@@ -123,7 +121,7 @@ public class NewEngine {
         try {
             Execution execution = parseConfigToExecution(execConfig);
             synchronized (this) {
-                taskList.put(execution.getName(), execution);
+                tasksList.put(execution.getName(), execution);
             }
         } catch (RuntimeException ex) {
             System.out.println("Null exception!");
@@ -165,7 +163,7 @@ public class NewEngine {
 
     public List<ExecutionDTO> getTasksDTO() {
         List<ExecutionDTO> list = new ArrayList<>();
-        taskList.forEach((s, task) -> list.add(new ExecutionDTO(task)));
+        tasksList.forEach((s, task) -> list.add(new ExecutionDTO(task)));
         return list;
     }
 
@@ -173,7 +171,7 @@ public class NewEngine {
         try {
             Execution execution = parseExistExeConfigToExecution(exeConfigDTO);
             synchronized (this) {
-                taskList.put(execution.getName(), execution);
+                tasksList.put(execution.getName(), execution);
             }
         } catch (RuntimeException ex) {
             System.out.println("Null exception!");
@@ -184,7 +182,7 @@ public class NewEngine {
 
     private Execution parseExistExeConfigToExecution(ExistExecutionConfigDTO exeConfigDTO) {
         Execution execution = new Execution();
-        Execution baseExec = taskList.get(exeConfigDTO.getBaseName());
+        Execution baseExec = tasksList.get(exeConfigDTO.getBaseName());
         execution.setName(generateExistingExecutionName(exeConfigDTO.getBaseName()));
         execution.setCreatingUser(baseExec.getCreatingUser());
         execution.setPrice(baseExec.getPrice());
@@ -202,29 +200,61 @@ public class NewEngine {
 
     private String generateExistingExecutionName(String baseName) {
         Integer i = 1;
-        while (taskList.containsKey(baseName.concat(i.toString()))) {
+        while (tasksList.containsKey(baseName.concat(i.toString()))) {
             i++;
         }
         return baseName.concat(i.toString());
     }
 
-    public boolean isAllowedToRegister(String taskName) {
-        return taskList.get(taskName).isAllowedToRegister();
-    }
-
     public synchronized void registerWorker(String workerName, String taskName) {
-        taskList.get(taskName).addWorker(workerName);
+        tasksList.get(taskName).addWorker(workerName);
     }
 
     public synchronized void unregisterWorker(String workerName, String taskName) {
-        taskList.get(taskName).removeWorker(workerName);
+        tasksList.get(taskName).removeWorker(workerName);
     }
 
     public synchronized WorkerExecutionDTO getWorkerExecution(String taskName) {
-        return new WorkerExecutionDTO(taskList.get(taskName));
+        return new WorkerExecutionDTO(tasksList.get(taskName));
     }
 
     public boolean isRegistered(String username, String taskName) {
-        return taskList.get(taskName).isWorkerExist(username);
+        return tasksList.get(taskName).isWorkerExist(username);
+    }
+
+    public boolean isExecutionExist(String taskName) {
+        return tasksList.containsKey(taskName);
+    }
+
+    public Double getExecutionProgress(String taskName) {
+        return tasksList.get(taskName).getProgress();
+    }
+
+    public synchronized RunExecutionDTO getRunExecutionDTO(String taskName) {
+        return new RunExecutionDTO(tasksList.get(taskName));
+    }
+
+    public void playExecution(String taskName) {
+        new Thread(() -> tasksList.get(taskName).play()).start(); // so the servlet's thread will not do this ???
+    }
+
+    public boolean isExecutionCreatingUser(String task, String username) {
+        return Objects.equals(tasksList.get(task).getCreatingUser(), username);
+    }
+
+    public void pauseExecution(String taskName) {
+        tasksList.get(taskName).pause();
+    }
+
+    public void resumeExecution(String taskName) {
+        tasksList.get(taskName).resume();
+    }
+
+    public void stopExecution(String taskName) {
+        tasksList.get(taskName).stop();
+    }
+
+    public boolean isAllowedToPlayExecution(String taskName) {
+        return tasksList.get(taskName).isAllowedToPlay();
     }
 }

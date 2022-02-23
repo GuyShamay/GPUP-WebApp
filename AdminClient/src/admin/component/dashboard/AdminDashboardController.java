@@ -6,6 +6,7 @@ import admin.component.actions.path.PathsController;
 import admin.component.actions.whatif.WhatIfController;
 import admin.component.graphs.GraphListController;
 import admin.component.main.AdminMainController;
+import admin.component.taskcontrol.TaskControlController;
 import admin.component.tasks.TasksListController;
 import admin.component.users.UsersListController;
 import javafx.beans.property.BooleanProperty;
@@ -23,6 +24,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import static admin.util.Constants.*;
@@ -128,7 +130,7 @@ public class AdminDashboardController implements Closeable {
         graphsComponentController.startGraphsListRefresher();
         loadTasksListComponent();
         tasksComponentController.startTaskListRefresher();
-        createTaskFromTaskButton.disableProperty().bind(tasksComponentController.createNewTaskProperty().not());
+        //createTaskFromTaskButton.disableProperty().bind(tasksComponentController.createNewTaskProperty().not());
 
     }
 
@@ -328,8 +330,14 @@ public class AdminDashboardController implements Closeable {
     void createTaskFromTaskButtonClicked(ActionEvent event) {
         if (tasksComponentController.getSelectedTaskName() != null) {
             if (tasksComponentController.taskRunType()) {
-                tasksComponentController.createTask(tasksComponentController.getSelectedTaskName());
-                actionsPressed.set(false);
+                if (true) // check if the task is successfully ended && not incremental
+                {
+                    tasksComponentController.createTask(tasksComponentController.getSelectedTaskName());
+                    actionsPressed.set(false);
+                } else {
+                    tasksComponentController.updateTasksListMsgLabel("Can't run incremental for successfully finished task", true);
+
+                }
             } else {
                 tasksComponentController.updateTasksListMsgLabel("Please Select From Scratch / Incremental", true);
             }
@@ -346,12 +354,40 @@ public class AdminDashboardController implements Closeable {
             backButton.setVisible(false);
             actionsPressed.set(false);
         } else {
-            graphsComponentController.updateGraphMsgLabel("Please Select a task", true);
+            graphsComponentController.updateGraphMsgLabel("Please Select a graph", true);
         }
     }
 
     @FXML
     void taskControlButtonClicked(ActionEvent event) {
+        // A task has been selected:
+        if (tasksComponentController.getSelectedTaskName() != null) {
+            // admin's tasks only:
+            if (Objects.equals(tasksComponentController.getSelectedTaskCreatingUserName(), getUsername())) {
+                // Need to create the component:
+                if (!adminMainController.isTaskComponentCreated(tasksComponentController.getSelectedTaskName())) {
+                    URL dashboardUrl = getClass().getResource(TASK_CONTROL_FXML_RESOURCE_LOCATION);
+                    try {
+                        FXMLLoader fxmlLoader = new FXMLLoader();
+                        fxmlLoader.setLocation(dashboardUrl);
+                        Parent taskControlComponent = fxmlLoader.load();
+                        TaskControlController taskControlController = fxmlLoader.getController();
+                        taskControlController.setAdminMainController(this.adminMainController);
+                        taskControlController.setCurrentTask(tasksComponentController.getSelectedTask());
+                        adminMainController.addTaskControlScreen(tasksComponentController.getSelectedTaskName(), taskControlComponent);
+                        System.out.println("Comp Created!");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                pauseRefreshers();
+                adminMainController.switchToTaskControlScreen(tasksComponentController.getSelectedTaskName());
+            } else {
+                tasksComponentController.updateTasksListMsgLabel("You didn't created this task", true);
+            }
+        } else {
+            tasksComponentController.updateTasksListMsgLabel("Please Select a task", true);
+        }
     }
 
     public String getUsername() {
@@ -360,6 +396,23 @@ public class AdminDashboardController implements Closeable {
 
     public void updateGraphsListMsgLabel(String msg, boolean isError) {
         graphsComponentController.updateGraphMsgLabel(msg, isError);
+    }
+
+    public void resumeRefreshers() {
+        tasksComponentController.resumeRefresher();
+        graphsComponentController.resumeRefresher();
+        usersListComponentController.resumeRefresher();
+
+    }
+
+    public void pauseRefreshers() {
+        tasksComponentController.pauseRefresher();
+        graphsComponentController.pauseRefresher();
+        usersListComponentController.pauseRefresher();
+    }
+
+    public void setActionsPressed(boolean res){
+        actionsPressed.set(res);
     }
 }
 

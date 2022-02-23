@@ -16,6 +16,7 @@ public class Constants {
     public static final String RELATION_TYPE = "relation-type";
     public static final String GRAPH_TASK = "graph-task";
     public final static String TASK_NAME = "taskname";
+    public final static String TASK = "task";
 
     public static final int INT_PARAMETER_ERROR = Integer.MIN_VALUE;
     public final static String WORKING_DIR = "C:\\gpup-working-dir\\";

@@ -67,7 +67,13 @@ public class UsersListController implements Closeable {
         timer = new Timer();
         timer.schedule(listRefresher, REFRESH_RATE, REFRESH_RATE);
     }
+    public void resumeRefresher() {
+        autoUpdate.set(true);
+    }
 
+    public void pauseRefresher() {
+        autoUpdate.set(false);
+    }
 
     @Override
     public void close() {

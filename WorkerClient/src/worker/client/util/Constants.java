@@ -28,5 +28,6 @@ public class Constants {
     public final static String USERS_LIST = FULL_SERVER_PATH + "/userslist";
     public final static String TASKS_LIST = FULL_SERVER_PATH + "/tasks-list";
     public static final String REGISTER = FULL_SERVER_PATH + WORKER + "/register";
+    public static final String UNREGISTER = FULL_SERVER_PATH + WORKER + "/unregister";
 
 }

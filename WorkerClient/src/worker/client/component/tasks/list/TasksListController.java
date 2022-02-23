@@ -129,4 +129,8 @@ public class TasksListController implements Closeable {
             timer.cancel();
         }
     }
+
+    public ExecutionDTO getSelectedTask() {
+        return tasksTable.getSelectionModel().getSelectedItem();
+    }
 }
