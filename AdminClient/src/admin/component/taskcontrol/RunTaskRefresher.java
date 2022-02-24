@@ -62,7 +62,9 @@ public class RunTaskRefresher extends TimerTask {
                     String taskAsString = response.body().string();
                     JsonObject jsonObject = JsonParser.parseString(taskAsString).getAsJsonObject();
                     RunExecutionDTO runExecutionDTO = TaskUtil.parseToRunExecutionDTO(jsonObject); // need to update
-                    taskConsumer.accept(runExecutionDTO); // need to update
+                   Platform.runLater(()->{
+                       taskConsumer.accept(runExecutionDTO); // need to update
+                   });
                 }
             }
         });

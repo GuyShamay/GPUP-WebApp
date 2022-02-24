@@ -1,7 +1,7 @@
 package old.dto;
 
 import old.component.target.FinishResult;
-import old.component.target.Target;
+import old.component.target.oldTarget;
 
 import java.util.List;
 
@@ -13,7 +13,7 @@ public class ProcessedTargetDTO implements GPUPConsumer {
     private final String justSkippedList;
     private TaskOutputDTO taskOutput;
 
-    public ProcessedTargetDTO(Target target) {
+    public ProcessedTargetDTO(oldTarget target) {
         this.name = target.getName();
         this.userData = target.getUserData() == null ? "No Data to show." : target.getUserData();
         this.finishResult = target.getFinishResult();
@@ -21,7 +21,7 @@ public class ProcessedTargetDTO implements GPUPConsumer {
         justSkippedList = listToSting(target.getSkippedList());
     }
 
-    private String listToSting(List<Target> list) {
+    private String listToSting(List<oldTarget> list) {
         if (list.size() == 0) {
             return "None";
         } else {

@@ -2,17 +2,18 @@ package worker.logic.task;
 
 
 import dto.execution.config.ConfigDTO;
-import dto.target.NewExecutionTargetDTO;
-import worker.logic.Worker;
+import dto.execution.config.SimulationConfigDTO;
+import dto.target.FinishResultDTO;
+import dto.target.FinishedTargetDTO;
+import okhttp3.*;
+import org.jetbrains.annotations.NotNull;
+import worker.client.util.Constants;
+import worker.client.util.HttpClientUtil;
 import worker.logic.target.TaskTarget;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Timer;
-import java.util.function.Consumer;
+import java.io.IOException;
 
-import static worker.client.util.Constants.REFRESH_RATE;
-import static worker.client.util.Constants.TARGET_REQ_REFRESH_RATE;
+import static worker.client.util.Constants.*;
 
 public class WorkerExecution {
     private String name;
@@ -24,6 +25,8 @@ public class WorkerExecution {
     private ExecutionType type;
     private WorkerExecutionStatus executionStatus;
     private ConfigDTO executionDetails;
+    private Task task;
+
 
     public WorkerExecution() {
         executionStatus = WorkerExecutionStatus.Registered;
@@ -40,7 +43,20 @@ public class WorkerExecution {
     }
 
     public void setExecutionDetails(ConfigDTO executionDetails) {
+
         this.executionDetails = executionDetails;
+        initTask();
+    }
+
+    private void initTask() {
+        switch (this.type){
+            case Simulation:
+                task= new SimulationTask((SimulationConfigDTO) executionDetails);
+                break;
+            case Compilation:
+                //  CompilationTask.run(target.getName(),)
+                break;
+        }
     }
 
     public void pause() {
@@ -109,5 +125,28 @@ public class WorkerExecution {
 
     public int getPrice() {
         return price;
+    }
+
+    public void runTaskTarget(TaskTarget target) throws InterruptedException {
+        System.out.println(target.getName() + " / " + target.getExecutionName() + ": DONE");
+
+        /// implement task - compilation and simulation
+
+        task.run(target);
+        FinishedTargetDTO finishedTarget = new FinishedTargetDTO(target.getName(), target.getExecutionName(), target.getLogs(), this.name, FinishResultDTO.valueOf(target.getStatus().toString()));
+
+        String finishedTargetAsString = GSON_INST.toJson(finishedTarget);
+        RequestBody body = RequestBody.create(finishedTargetAsString, MediaType.parse("application/json"));
+
+        HttpClientUtil.runAsyncWithBody(Constants.SEND_TARGET, body, new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+
+            }
+        });
     }
 }

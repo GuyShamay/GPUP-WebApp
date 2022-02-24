@@ -4,17 +4,17 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
-public class Target {
+public class oldTarget {
 
     private final String name;
     private String userData;
-    private List<Target> requiredForList;
-    private List<Target> dependsOnList;
+    private List<oldTarget> requiredForList;
+    private List<oldTarget> dependsOnList;
     private TargetType type;
     private RunResult runResult;
     private FinishResult finishResult;
-    private List<Target> justOpenedList = new ArrayList<>();
-    private List<Target> skippedList = new ArrayList<>();
+    private List<oldTarget> justOpenedList = new ArrayList<>();
+    private List<oldTarget> skippedList = new ArrayList<>();
     private Duration taskRunDuration;
     private int serialSetCounter;
     private boolean isLockBySerialSet;
@@ -22,7 +22,7 @@ public class Target {
     private Instant startWaitingTime;
     private List<String> serialSets;
 
-    public Target(String name) {
+    public oldTarget(String name) {
         this.name = name;
         requiredForList = new ArrayList<>();
         dependsOnList = new ArrayList<>();
@@ -46,15 +46,15 @@ public class Target {
         return finishResult;
     }
 
-    public List<Target> getRequiredForList() {
+    public List<oldTarget> getRequiredForList() {
         return requiredForList;
     }
 
-    public List<Target> getJustOpenedList() {
+    public List<oldTarget> getJustOpenedList() {
         return justOpenedList;
     }
 
-    public List<Target> getDependsOnList() {
+    public List<oldTarget> getDependsOnList() {
         return dependsOnList;
     }
 
@@ -97,20 +97,20 @@ public class Target {
     }
 
     //GPUP1 func
-    public void addDependOnTarget(Target target) {
+    public void addDependOnTarget(oldTarget target) {
         if (!dependsOnList.contains(target))
             dependsOnList.add(target);
     }
 
     //GPUP1 func
-    public void addRequiredForTarget(Target target) {
+    public void addRequiredForTarget(oldTarget target) {
         if (!requiredForList.contains(target)) {
             requiredForList.add(target);
         }
     }
 
     //GPUP1 func
-    public boolean isDependency(Target target, String type) {
+    public boolean isDependency(oldTarget target, String type) {
         if (type.equals("dependsOn")) {
             return dependsOnList.contains(target);
         } else {
@@ -118,11 +118,11 @@ public class Target {
         }
     }
 
-    public List<Target> getSkippedList() {
+    public List<oldTarget> getSkippedList() {
         return skippedList;
     }
 
-    public void addToJustOpenedList(Target target) {
+    public void addToJustOpenedList(oldTarget target) {
         justOpenedList.add(target);
     }
 
@@ -159,11 +159,11 @@ public class Target {
         isLockBySerialSet = false;
     }
 
-    public void setRequiredFor(List<Target> requiredFor) {
+    public void setRequiredFor(List<oldTarget> requiredFor) {
         requiredForList = requiredFor;
     }
 
-    public void setDependOn(List<Target> dependOn) {
+    public void setDependOn(List<oldTarget> dependOn) {
         dependsOnList = dependOn;
     }
 
@@ -187,8 +187,8 @@ public class Target {
         return null;
     }
 
-    public List<Target> getDependsOnToOpenList() {
-        final List<Target> res = new ArrayList<>();
+    public List<oldTarget> getDependsOnToOpenList() {
+        final List<oldTarget> res = new ArrayList<>();
         dependsOnList.forEach(target -> {
             if(target.getFinishResult()==null)
                 res.add(target);
@@ -197,8 +197,8 @@ public class Target {
         return res;
     }
 
-    public List<Target> getSkippedBecauseList() {
-        final List<Target> res = new ArrayList<>();
+    public List<oldTarget> getSkippedBecauseList() {
+        final List<oldTarget> res = new ArrayList<>();
         dependsOnList.forEach(target -> {
             if(target.getFinishResult()==FinishResult.FAILURE)
                 res.add(target);

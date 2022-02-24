@@ -5,6 +5,7 @@ import dto.execution.RunExecutionDTO;
 import dto.execution.WorkerExecutionDTO;
 import dto.execution.config.*;
 import dto.graph.GraphDTO;
+import dto.target.FinishedTargetDTO;
 import dto.target.NewExecutionTargetDTO;
 import dto.target.TargetDTO;
 import dto.util.DTOUtil;
@@ -261,5 +262,9 @@ public class NewEngine {
 
     public List<NewExecutionTargetDTO> requestExecutionTargets(String taskName, int threadsCount) {
         return  tasksList.get(taskName).requestNewTargets(threadsCount);
+    }
+
+    public void setFinishedTarget(FinishedTargetDTO finishedTarget) {
+        tasksList.get(finishedTarget.getExecutionName()).setFinishedTarget(finishedTarget);
     }
 }

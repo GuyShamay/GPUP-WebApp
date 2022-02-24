@@ -2,6 +2,7 @@ package engine.execution;
 
 import dto.execution.config.ConfigDTO;
 import dto.execution.config.ExecutionConfigDTO;
+import dto.target.FinishedTargetDTO;
 import dto.target.NewExecutionTargetDTO;
 import engine.graph.TargetGraph;
 import engine.progressdata.ProgressData;
@@ -10,9 +11,12 @@ import engine.target.Result;
 import engine.target.RunResult;
 import engine.target.Target;
 import old.component.target.TargetType;
+import old.component.target.oldTarget;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Execution {
     private TargetGraph taskGraph;
@@ -32,6 +36,7 @@ public class Execution {
     private boolean play; // STOP -> to false, PLAY -> to true
     private boolean isStarted; // PLAY -> to true
     private List<Target> waitingList;
+    private Set<Target> doneTargets;
 
     public Execution() {
         status = ExecutionStatus.New;
@@ -41,6 +46,7 @@ public class Execution {
         workers = new ArrayList<>();
         play = false;
         pause = false;
+        doneTargets=new HashSet<>();
     }
 
 
@@ -245,4 +251,47 @@ public class Execution {
             progressData.move(from, to, target.getName());
         }
     }
+
+    public void setFinishedTarget(FinishedTargetDTO finishedTarget) {
+       Target target = taskGraph.getTargetMap().get(finishedTarget.getName());
+       target.setFinishResult(FinishResult.valueOf(finishedTarget.getFinishResult().toString()));
+       changeRunResult(RunResult.INPROCESS, target.getFinishResult(),target);
+        updateProgressBar(target);
+
+       /////DO SOMETHING WITH LOGS
+        updateGraphAfterTaskResult(waitingList,target);
+    }
+
+    private synchronized void updateGraphAfterTaskResult(List<Target> waitingList, Target currentTarget) {
+            currentTarget.setRunResult(RunResult.FINISHED);
+            if (currentTarget.getFinishResult().equals(FinishResult.FAILURE)) {
+                taskGraph.dfsTravelToUpdateSkippedList(currentTarget);
+                addSkippedToDoneSet(currentTarget);
+                changeRunResultOfList(currentTarget.getSkippedList(), RunResult.FROZEN, RunResult.SKIPPED);
+                taskGraph.updateTargetAdjAfterFinishWithFailure(currentTarget);
+            } else {
+                taskGraph.updateTargetAdjAfterFinishWithoutFailure(progressData, waitingList, currentTarget);
+            }
+    }
+
+    private synchronized void changeRunResultOfList(List<Target> skippedList, RunResult from, RunResult to) {
+        for (Target t : skippedList) {
+            changeRunResult(from, to, t);
+        }
+    }
+
+    private void addSkippedToDoneSet(Target currentTarget) {
+        currentTarget.getSkippedList().forEach(target -> {
+            updateProgressBar(target);
+        });
+    }
+
+    private void updateProgressBar(Target target) {
+        int sizeBefore = doneTargets.size();
+        doneTargets.add(target);
+        if(sizeBefore < doneTargets.size())
+            incrementProgress();
+    }
+
+
 }

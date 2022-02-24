@@ -1,6 +1,11 @@
 package gpup.servlets.worker.execution;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import dto.target.FinishedTargetDTO;
+import engine.NewEngine;
+import gpup.util.ServletUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -8,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Scanner;
 
 @WebServlet(name = "SendTargetServlet", urlPatterns = {"/worker/send-targets"})
@@ -23,13 +29,34 @@ public class SendTargetServlet extends HttpServlet {
         Scanner s = new Scanner(req.getInputStream(), "UTF-8").useDelimiter("\\A");
         String reqBodyAsString = s.hasNext() ? s.next() : null;
 
-        FinishedTargetDTO finishedTarget = parseBodyToFinishedTarget(reqBodyAsString);
+        if (reqBodyAsString != null || !reqBodyAsString.isEmpty()) {
+            FinishedTargetDTO finishedTarget = parseBodyToFinishedTarget(reqBodyAsString);
+            NewEngine engine = ServletUtils.getEngine(getServletContext());
+            engine.setFinishedTarget(finishedTarget);
+        }else{
+            PrintWriter out = resp.getWriter();
+            String errorMessage = "You didnt send target! ";
+            resp.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+            out.println(errorMessage);
+            out.flush();
+        }
     }
 
     private FinishedTargetDTO parseBodyToFinishedTarget(String reqBodyAsString) {
-        ///TODOOOO
-      //  FinishedTargetDTO target = new FinishedTargetDTO()
-        return null;
+        FinishedTargetDTO target = new FinishedTargetDTO();
+            JsonObject jsonObject = JsonParser.parseString(reqBodyAsString).getAsJsonObject();
+            if(jsonObject.has("name"))
+                target.setName(jsonObject.get("name").getAsString());
+            if(jsonObject.has("executionName"))
+                target.setName(jsonObject.get("executionName").getAsString());
+            if(jsonObject.has("logs"))
+                target.setName(jsonObject.get("logs").getAsString());
+            if(jsonObject.has("worker"))
+                target.setName(jsonObject.get("worker").getAsString());
+            if(jsonObject.has("finishResult"))
+                target.setName(jsonObject.get("finishResult").getAsString());
+
+        return target;
     }
 
 }

@@ -7,6 +7,9 @@ import engine.target.RunResult;
 import engine.target.Target;
 import engine.target.TargetType;
 import engine.target.TargetsRelationType;
+import javafx.application.Platform;
+import old.component.target.FinishResult;
+import old.component.target.oldTarget;
 
 import java.util.*;
 
@@ -342,6 +345,62 @@ public class TargetGraph implements Cloneable {
                 }
                 whatIfRecursive(list, target, type);
             }
+        }
+    }
+
+    public void dfsTravelToUpdateSkippedList(Target currentTarget) {
+        Map<Target, Boolean> isVisited = new HashMap<>();
+        targetMap.forEach(((s, target) -> isVisited.put(target, false)));
+        List<Target> skippedList = currentTarget.getSkippedList();
+        recDfsUpdateDependentsList(isVisited, skippedList, currentTarget);
+        skippedList.remove(currentTarget);
+    }
+
+    private void recDfsUpdateDependentsList(Map<Target, Boolean> isVisited, List<Target> skippedList, Target currentTarget) {
+        skippedList.add(currentTarget);
+
+        for (Target t : gTranspose.get(currentTarget.getName())) {
+            if (!isVisited.get(t)) {
+                recDfsUpdateDependentsList(isVisited, skippedList, t);
+            }
+        }
+        isVisited.replace(currentTarget, false, true);
+    }
+
+    public void updateTargetAdjAfterFinishWithFailure(Target currentTarget) {
+        gTranspose.get(currentTarget.getName()).forEach(target -> {
+            if (isAllAdjOfTargetFinished(target)) {
+                currentTarget.addToJustOpenedList(target);
+            }
+        });
+    }
+
+    private boolean isAllAdjOfTargetFinished(Target target) {
+        return dependsOnGraph.get(target.getName()).stream().allMatch(t -> (t.getRunResult().equals(old.component.target.RunResult.FINISHED)));
+    }
+
+    public void updateTargetAdjAfterFinishWithoutFailure(ProgressData progressData, List<Target> waitingList, Target currentTarget) {
+        gTranspose.get(currentTarget.getName()).forEach(target -> {
+            if (target.getRunResult() != RunResult.FINISHED) {
+                if (isAllAdjOfTargetFinished(target))
+                    currentTarget.addToJustOpenedList(target);
+                if (isAllAdjOfTargetFinishedWithoutFailure(target)) {
+                    target.setRunResult(RunResult.WAITING);
+                    Platform.runLater(() -> progressData.move(RunResult.FROZEN, RunResult.WAITING, target.getName()));
+                    if (!waitingList.contains(target)) {
+                        waitingList.add(target);
+                        //target.setStartWaitingTime();
+                    }
+                }
+            }
+        });
+    }
+
+    private boolean isAllAdjOfTargetFinishedWithoutFailure(Target target) {
+        if (isAllAdjOfTargetFinished(target)) {
+            return dependsOnGraph.get(target.getName()).stream().allMatch(t -> (t.getFinishResult().equals(FinishResult.SUCCESS) || t.getFinishResult().equals(FinishResult.WARNING)));
+        } else {
+            return false;
         }
     }
 

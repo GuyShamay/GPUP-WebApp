@@ -1,7 +1,7 @@
 package old.component.task;
 
 import old.component.target.FinishResult;
-import old.component.target.Target;
+import old.component.target.oldTarget;
 import javafx.beans.property.SimpleStringProperty;
 
 import java.util.List;
@@ -12,7 +12,7 @@ public interface Task {
 
     long getProcessingTime();
 
-    void updateRelevantTargets(List<Target> targets);
+    void updateRelevantTargets(List<oldTarget> targets);
 
     int getParallelism();
 

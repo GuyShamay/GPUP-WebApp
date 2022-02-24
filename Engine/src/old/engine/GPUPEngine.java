@@ -185,7 +185,7 @@ public class GPUPEngine implements Engine {
     }
 
     private boolean hasGoodRunResult(String s) {
-        Target t = targetGraph.getTargetsMap().get(s);
+        oldTarget t = targetGraph.getTargetsMap().get(s);
         if (t.getRunResult() == RunResult.FINISHED && (t.getFinishResult() == FinishResult.SUCCESS || t.getFinishResult() == FinishResult.WARNING)) {
             return true;
         }
@@ -327,7 +327,7 @@ public class GPUPEngine implements Engine {
     }
 
     public List<TargetInfoDTO> getTargetsByRelation(String targetName, TargetsRelationType relationType) {
-        List<Target> targetsList = targetGraph.getTargetsByRelation(targetName, relationType);
+        List<oldTarget> targetsList = targetGraph.getTargetsByRelation(targetName, relationType);
         List<TargetInfoDTO> targetsDTOList = new ArrayList<>();
         targetsList.forEach((target -> targetsDTOList.add(new TargetInfoDTO(target))));
         return targetsDTOList;
@@ -340,7 +340,7 @@ public class GPUPEngine implements Engine {
 
     public void runTaskGPUP1(Consumer<GPUPConsumer> consumer) throws InterruptedException {
         Instant totalStart, totalEnd, start, end;
-        List<Target> waitingList;
+        List<oldTarget> waitingList;
 
         targetGraph.prepareGraphFromProcType(processingType);
         task.updateRelevantTargets(targetGraph.getWaitingAndFrozen());
@@ -358,7 +358,7 @@ public class GPUPEngine implements Engine {
 
         while (!waitingList.isEmpty()) {
             start = Instant.now();
-            Target currentTarget = waitingList.remove(0);
+            oldTarget currentTarget = waitingList.remove(0);
             currentTarget.setRunResult(RunResult.INPROCESS);
 
             currentTarget.setFinishResult(task.run(currentTarget.getName(), currentTarget.getUserData()));

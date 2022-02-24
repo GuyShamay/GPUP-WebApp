@@ -1,13 +1,13 @@
 package engine.serialset;
 
-import old.component.target.Target;
+import old.component.target.oldTarget;
 
 import java.util.List;
 
 public class SerialSet {
     private final String name;
     private final String targetAsString;
-    private List<Target> targets;
+    private List<oldTarget> targets;
 
     public SerialSet(String name, String targetAsString) {
         this.name = name;
@@ -18,11 +18,11 @@ public class SerialSet {
         return targetAsString;
     }
 
-    public void setTargets(List<Target> targets) {
+    public void setTargets(List<oldTarget> targets) {
         this.targets = targets;
     }
 
-    public List<Target> getTargets() {
+    public List<oldTarget> getTargets() {
         return targets;
     }
 
@@ -30,15 +30,15 @@ public class SerialSet {
         return name;
     }
 
-    public void lockAll(Target lockingTarget) {
-        targets.stream().filter(target -> !(target.equals(lockingTarget))).forEach(Target::lock);
+    public void lockAll(oldTarget lockingTarget) {
+        targets.stream().filter(target -> !(target.equals(lockingTarget))).forEach(oldTarget::lock);
     }
 
     public void unlockAll(){
-        targets.forEach(Target::unlock);
+        targets.forEach(oldTarget::unlock);
     }
 
-    public boolean contains(Target currentTarget) {
+    public boolean contains(oldTarget currentTarget) {
         return targets.contains(currentTarget);
     }
 }

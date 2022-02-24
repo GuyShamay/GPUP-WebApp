@@ -1,7 +1,7 @@
 package old.component.task.compile;
 
 import old.component.target.FinishResult;
-import old.component.target.Target;
+import old.component.target.oldTarget;
 import old.component.task.Task;
 import old.component.task.config.CompileConfig;
 import javafx.application.Platform;
@@ -86,7 +86,7 @@ public class CompileTask implements Task {
     }
 
     @Override
-    public void updateRelevantTargets(List<Target> targets) {
+    public void updateRelevantTargets(List<oldTarget> targets) {
 
     }
 

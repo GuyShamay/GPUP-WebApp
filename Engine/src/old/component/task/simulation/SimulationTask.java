@@ -2,7 +2,7 @@ package old.component.task.simulation;
 
 
 import old.component.target.FinishResult;
-import old.component.target.Target;
+import old.component.target.oldTarget;
 import old.component.task.Task;
 import old.component.task.config.SimulationConfig;
 import javafx.application.Platform;
@@ -18,7 +18,7 @@ public class SimulationTask implements Task {
     private final float successWithWarningsProb;
     private long sleepingTime;
     private final Random random;
-    private List<Target> targets;
+    private List<oldTarget> targets;
     private int parallelism;
     private SimpleStringProperty taskOutput;
 
@@ -83,7 +83,7 @@ public class SimulationTask implements Task {
     }
 
     @Override
-    public void updateRelevantTargets(List<Target> targets) {
+    public void updateRelevantTargets(List<oldTarget> targets) {
         this.targets = targets;
     }
 
