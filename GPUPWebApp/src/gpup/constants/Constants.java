@@ -11,6 +11,7 @@ public class Constants {
     public static final String NO = "n";
     public static final String YES = "y";
     public static final String USERNAME = "username";
+    public static final String THREADS = "threads";
     public static final String GRAPH_NAME = "graph-name";
     public static final String TARGET_NAME = "target-name";
     public static final String RELATION_TYPE = "relation-type";

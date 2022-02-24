@@ -5,6 +5,7 @@ import dto.execution.RunExecutionDTO;
 import dto.execution.WorkerExecutionDTO;
 import dto.execution.config.*;
 import dto.graph.GraphDTO;
+import dto.target.NewExecutionTargetDTO;
 import dto.target.TargetDTO;
 import dto.util.DTOUtil;
 import engine.exceptions.GraphExistException;
@@ -256,5 +257,9 @@ public class NewEngine {
 
     public boolean isAllowedToPlayExecution(String taskName) {
         return tasksList.get(taskName).isAllowedToPlay();
+    }
+
+    public List<NewExecutionTargetDTO> requestExecutionTargets(String taskName, int threadsCount) {
+        return  tasksList.get(taskName).requestNewTargets(threadsCount);
     }
 }

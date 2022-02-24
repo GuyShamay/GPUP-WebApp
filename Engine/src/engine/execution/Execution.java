@@ -2,10 +2,13 @@ package engine.execution;
 
 import dto.execution.config.ConfigDTO;
 import dto.execution.config.ExecutionConfigDTO;
+import dto.target.NewExecutionTargetDTO;
 import engine.graph.TargetGraph;
 import engine.progressdata.ProgressData;
+import engine.target.FinishResult;
+import engine.target.Result;
+import engine.target.RunResult;
 import engine.target.Target;
-import old.component.target.RunResult;
 import old.component.target.TargetType;
 
 import java.util.ArrayList;
@@ -139,7 +142,7 @@ public class Execution {
         return workers.contains(name);
     }
 
-    public synchronized void IncrementProgress() {
+    public synchronized void incrementProgress() {
         if (progress < taskGraph.getCount()) {
             progress++;
         }
@@ -206,10 +209,40 @@ public class Execution {
             while (pause) {
                 // update message: PAUSED
             }
-
-
         }
         System.out.println("done");
         status = ExecutionStatus.Done;
+    }
+
+    public synchronized List<NewExecutionTargetDTO> requestNewTargets(int threadsCount) {
+
+        int targetsPerWorker = waitingList.size() / workers.size();
+        if (targetsPerWorker == 0) { // waiting is empty OR more workers than waiting
+            targetsPerWorker = waitingList.size() == 0 ? 0 : 1;
+        }
+        int totalToSend = Math.min(targetsPerWorker, threadsCount);
+
+        if (totalToSend != 0) {
+            List<NewExecutionTargetDTO> list = new ArrayList<>();
+            for (int i = 0; i < totalToSend; i++) {
+                Target currentTarget = waitingList.remove(0);
+                changeRunResult(RunResult.WAITING, RunResult.INPROCESS, currentTarget);
+                NewExecutionTargetDTO t = new NewExecutionTargetDTO(currentTarget);
+                t.setExecuitonName(this.name);
+                list.add(t);
+            }
+            return list;
+        }
+        return null;
+    }
+
+    private void changeRunResult(Result from, Result to, Target target) {
+        if (from != to) {
+            if (to instanceof RunResult)
+                target.setRunResult((RunResult) to);
+            else
+                target.setFinishResult((FinishResult) to);
+            progressData.move(from, to, target.getName());
+        }
     }
 }

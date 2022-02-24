@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.TimerTask;
 import java.util.function.Consumer;
 
-import static worker.client.util.Constants.GSON_INST;
 import static worker.client.util.Constants.TASK_NAME;
 
 public class TargetsRequestRefresher extends TimerTask {
@@ -31,6 +30,7 @@ public class TargetsRequestRefresher extends TimerTask {
     private final Consumer<String> errorConsumer;
     private final BooleanProperty shouldUpdate;
     private String taskName;
+
 
     public TargetsRequestRefresher(String taskName, Consumer<List<NewExecutionTargetDTO>> targetsConsumer, Consumer<String> errorConsumer) {
         this.targetsConsumer = targetsConsumer;

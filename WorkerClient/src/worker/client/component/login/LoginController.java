@@ -61,6 +61,7 @@ public class LoginController {
                 .parse(Constants.LOGIN_PAGE)
                 .newBuilder()
                 .addQueryParameter("username", userName)
+                .addQueryParameter("threads", threadsCount.toString())
                 .build()
                 .toString();
 
