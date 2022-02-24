@@ -25,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import worker.client.util.Constants;
 import worker.client.util.HttpClientUtil;
+import worker.logic.target.TargetStatus;
 import worker.logic.target.TaskTarget;
 import worker.logic.task.TargetsRequestRefresher;
 import worker.logic.task.WorkerExecution;
@@ -130,24 +131,26 @@ public class Worker {
 
         while (isAlive) {
             workerExecutions.forEach((s, exec) -> {
-                TaskTarget target = targets.stream()
-                        .filter(taskTarget -> taskTarget.getStatus() == null && taskTarget.getExecutionName().equals(exec.getName()))
-                        .findFirst().get(); // the first target from the task that didn't process yet
-                Runnable r = () -> {
-                    try {
-                        runTarget(target);
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                targets.forEach(taskTarget -> {
+                    if (taskTarget.getStatus() == null && taskTarget.getExecutionName().equals(exec.getName())) {
+                        Runnable r = () -> {
+                            try {
+                                runTarget(taskTarget);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        };
+                        Future<?> f = threadsExecutor.submit(r);
+                        futures.add(f);
                     }
-                };
-                Future<?> f = threadsExecutor.submit(r);
-                futures.add(f);
+                });
             });
         }
     }
 
     private void runTarget(TaskTarget target) {
         System.out.println(target.getName() + " / " + target.getExecutionName() + ": DONE");
+        target.setStatus(TargetStatus.InProcess);
         /// implement task - compilation and simulation
 
 
@@ -169,7 +172,7 @@ public class Worker {
     }
 
     public void startRefresher() {
-        refresher = new TargetsRequestRefresher(this,this::acceptTargets);
+        refresher = new TargetsRequestRefresher(this, this::acceptTargets);
         new Timer().schedule(refresher, TARGET_REQ_REFRESH_RATE, TARGET_REQ_REFRESH_RATE);
     }
 
@@ -186,7 +189,7 @@ public class Worker {
     }
 
     public boolean isAvailableThreads() {
-      return (threadsCount - ((ThreadPoolExecutor)threadsExecutor).getActiveCount() > 0);
+        return (threadsCount - ((ThreadPoolExecutor) threadsExecutor).getActiveCount() > 0);
     }
 
     public Set<String> getWorkerExecutions() {
@@ -194,7 +197,7 @@ public class Worker {
     }
 
     public void shutdown() {
-        isAlive=false;
+        isAlive = false;
         //Somethingbefore?
         threadsExecutor.shutdownNow();
     }

@@ -28,7 +28,6 @@ public class TargetsRequestServlet extends HttpServlet {
         response.setContentType("application/json");
         String taskNameFromParameter = request.getParameter(TASK_NAME);
 
-        NewEngine engine = ServletUtils.getEngine(getServletContext());
         String username = SessionUtils.getUsername(request);
         Integer threadsCount = SessionUtils.getWorkerThreads(request);
         if (username != null || threadsCount != null) {
@@ -41,8 +40,8 @@ public class TargetsRequestServlet extends HttpServlet {
                 } else {
                     NewEngine engine = ServletUtils.getEngine(getServletContext());
                     if (engine.isRegistered(username, taskNameFromParameter)) {
-                        if(exec running)
-                            if( not paused)
+                      //  if(exec running)
+                       //     if( not paused)
                         List<NewExecutionTargetDTO> newTargets = engine.requestExecutionTargets(taskNameFromParameter, threadsCount);
                         if (newTargets == null || newTargets.isEmpty()) {
                             // No targets are available:
