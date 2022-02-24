@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.TimerTask;
 import java.util.function.Consumer;
 
-import static worker.client.util.Constants.GSON_INST;
 import static worker.client.util.Constants.TASK_NAME;
 
 public class TargetsRequestRefresher extends TimerTask {

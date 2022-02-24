@@ -7,7 +7,9 @@ import dto.target.FinishResultDTO;
 import dto.target.FinishedTargetDTO;
 import dto.target.NewExecutionTargetDTO;
 import javafx.application.Platform;
+
 import javafx.beans.InvalidationListener;
+
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -46,8 +48,10 @@ public class Worker {
     private ExecutorService threadsExecutor;
     private Map<String, WorkerExecution> workerExecutions; // list of registered tasks
     private final List<TaskTarget> targets;
+
     private TargetsRequestRefresher refresher;
     private boolean isAlive;
+
     //private List<ExecutionDTO> listedExecutions;
     // for task table in tasks screen:
     //              http req from engine: getExecutionByWorker
@@ -58,7 +62,10 @@ public class Worker {
         threadsCount = 0;
         targets = new ArrayList<>();
         workerExecutions = new HashMap<>();
+
         isAlive = true;
+
+        threadsExecutor = Executors.newFixedThreadPool(threadsCount);
 
         new Thread(() -> run()).start();
     }
@@ -142,7 +149,6 @@ public class Worker {
     private void runTarget(TaskTarget target) {
         System.out.println(target.getName() + " / " + target.getExecutionName() + ": DONE");
         /// implement task - compilation and simulation
-
 
 
         FinishedTargetDTO finishedTarget = new FinishedTargetDTO(target.getName(), target.getExecutionName(), target.getLogs(), this.name, FinishResultDTO.valueOf(target.getType().name()));
