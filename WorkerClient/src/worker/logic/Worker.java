@@ -22,9 +22,9 @@ public class Worker {
     private Map<String, WorkerExecution> workerExecutions; // list of registered tasks
     private final List<TaskTarget> targets;
     //private List<ExecutionDTO> listedExecutions;
-
     // for task table in tasks screen:
     //              http req from engine: getExecutionByWorker
+
     public Worker() {
         credit = new SimpleIntegerProperty(0);
         busyThreads = 0;

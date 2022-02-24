@@ -90,6 +90,7 @@ public class RunTask extends Task<Boolean> {
                     };
                     Future<?> f = threadExecutor.submit(r);
                     futures.add(f);
+
                 }
             }
         } while (!AllThreadsDone(futures));
