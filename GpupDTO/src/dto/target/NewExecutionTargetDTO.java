@@ -5,10 +5,12 @@ import engine.target.Target;
 public class NewExecutionTargetDTO {
     private String name;
     private String userData;
+    private String executionName;
 
-    public NewExecutionTargetDTO(Target target) {
+    public NewExecutionTargetDTO(Target target,String executionName) {
         this.name = target.getName();
         this.userData = target.getUserData();
+        this.executionName=executionName;
     }
 
     public NewExecutionTargetDTO() {
@@ -28,5 +30,13 @@ public class NewExecutionTargetDTO {
 
     public void setUserData(String userData) {
         this.userData = userData;
+    }
+
+    public String getExecutionName() {
+        return executionName;
+    }
+
+    public void setExecutionName(String executionName) {
+        this.executionName = executionName;
     }
 }

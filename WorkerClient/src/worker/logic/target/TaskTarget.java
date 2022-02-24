@@ -6,7 +6,7 @@ import worker.logic.task.ExecutionType;
 public class TaskTarget {
     private String name;
     private String userData;
-    private String ExecutionName;
+    private String executionName;
     private String logs;
     private Integer payedPrice;
     private ExecutionType type;
@@ -19,6 +19,7 @@ public class TaskTarget {
     public TaskTarget(NewExecutionTargetDTO t) {
         this.name = t.getName();
         this.userData = t.getUserData();
+        this.executionName = t.getExecutionName();
     }
 
     public String getUserData() {
@@ -38,11 +39,11 @@ public class TaskTarget {
     }
 
     public String getExecutionName() {
-        return ExecutionName;
+        return executionName;
     }
 
     public void setExecutionName(String executionName) {
-        ExecutionName = executionName;
+        this.executionName = executionName;
     }
 
     public String getLogs() {

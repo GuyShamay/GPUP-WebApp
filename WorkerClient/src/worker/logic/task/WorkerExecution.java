@@ -111,11 +111,11 @@ public class WorkerExecution {
     }
 
     public void startRefresher() {
-        refresher = new TargetsRequestRefresher(this.name, this::acceptTargets, this::EC);
+    //    refresher = new TargetsRequestRefresher(this.name, this::acceptTargets, this::EC);
         new Timer().schedule(refresher, TARGET_REQ_REFRESH_RATE, TARGET_REQ_REFRESH_RATE);
     }
 
-    private void acceptTargets(List<NewExecutionTargetDTO> newTargets) {
+    public void acceptTargets(List<NewExecutionTargetDTO> newTargets) {
         List<TaskTarget> list = new ArrayList<>();
         newTargets.forEach(t -> {
             TaskTarget target = new TaskTarget(t);
@@ -143,5 +143,9 @@ public class WorkerExecution {
 
     public void setNewTargetsConsumer(Consumer<List<TaskTarget>> targets) {
         this.consumer = targets;
+    }
+
+    public int getPrice() {
+        return price;
     }
 }

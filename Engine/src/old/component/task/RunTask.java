@@ -154,10 +154,10 @@ public class RunTask extends Task<Boolean> {
     private void runTarget(List<Target> waitingList, Target currentTarget) throws InterruptedException {
        /* subTargetGraph.lockSerialSetOf(currentTarget);
 
-        currentTarget.setStartRunningTime();
+       // currentTarget.setStartRunningTime();
         updateMessage("Target " + currentTarget.getName() + " Starting");
         changeRunResult(RunResult.WAITING, RunResult.INPROCESS, currentTarget);
-        currentTarget.setFinishResult(task.run(currentTarget.getName(), currentTarget.getUserData()));
+     //   currentTarget.setFinishResult(task.run(currentTarget.getName(), currentTarget.getUserData()));
         updateMessage("Target " + currentTarget.getName() + " Finished");
 
         synchronized (changeRunResult) {

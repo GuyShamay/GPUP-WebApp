@@ -72,6 +72,7 @@ public class WorkerMainController implements Closeable {
         workerDashboardController.close();
         if (isLoggedIn) {
             unregisterTasks();
+            worker.shutdown();
             logout();
         }
     }
@@ -191,7 +192,6 @@ public class WorkerMainController implements Closeable {
 
     public void registerForTask(JsonObject jsonObject) {
         WorkerExecution execution = TaskUtil.parseToWorkerExecution(jsonObject);
-        execution.setNewTargetsConsumer(this.worker::acceptTargets);
         this.worker.addExecution(execution);
     }
 }
