@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 
 public class Constants {
     public final static int REFRESH_RATE = 2000;
+    public final static int TARGET_REQ_REFRESH_RATE = 500;
 
     // FXML Locations:
     public final static String MAIN_PAGE_FXML_RESOURCE_LOCATION = "component/main/worker-main-app.fxml";
@@ -29,5 +30,7 @@ public class Constants {
     public final static String TASKS_LIST = FULL_SERVER_PATH + "/tasks-list";
     public static final String REGISTER = FULL_SERVER_PATH + WORKER + "/register";
     public static final String UNREGISTER = FULL_SERVER_PATH + WORKER + "/unregister";
+    public static final String TARGET_REQUEST = FULL_SERVER_PATH + WORKER + "/targets-request";
+    public static final String SEND_TARGET = FULL_SERVER_PATH + WORKER + "/send-target";
 
 }

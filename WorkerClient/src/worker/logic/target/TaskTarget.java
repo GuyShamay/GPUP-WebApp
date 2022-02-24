@@ -1,9 +1,11 @@
 package worker.logic.target;
 
+import dto.target.NewExecutionTargetDTO;
 import worker.logic.task.ExecutionType;
 
 public class TaskTarget {
     private String name;
+    private String userData;
     private String ExecutionName;
     private String logs;
     private Integer payedPrice;
@@ -12,6 +14,19 @@ public class TaskTarget {
 
     public TaskTarget() {
         payedPrice = null;
+    }
+
+    public TaskTarget(NewExecutionTargetDTO t) {
+        this.name = t.getName();
+        this.userData = t.getUserData();
+    }
+
+    public String getUserData() {
+        return userData;
+    }
+
+    public void setUserData(String userData) {
+        this.userData = userData;
     }
 
     public String getName() {

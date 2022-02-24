@@ -2,6 +2,17 @@ package worker.logic.task;
 
 
 import dto.execution.config.ConfigDTO;
+import dto.target.NewExecutionTargetDTO;
+import worker.logic.Worker;
+import worker.logic.target.TaskTarget;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Timer;
+import java.util.function.Consumer;
+
+import static worker.client.util.Constants.REFRESH_RATE;
+import static worker.client.util.Constants.TARGET_REQ_REFRESH_RATE;
 
 public class WorkerExecution {
     private String name;
@@ -13,11 +24,14 @@ public class WorkerExecution {
     private ExecutionType type;
     private WorkerExecutionStatus executionStatus;
     private ConfigDTO executionDetails;
+    private TargetsRequestRefresher refresher;
+    private Consumer<List<TaskTarget>> consumer;
 
     public WorkerExecution() {
         executionStatus = WorkerExecutionStatus.Registered;
         credit = 0;
         doneTargets = 0;
+        startRefresher();
     }
 
     public ConfigDTO getExecutionDetails() {
@@ -94,5 +108,40 @@ public class WorkerExecution {
 
     public void setProgress(int progress) {
         this.progress = progress;
+    }
+
+    public void startRefresher() {
+        refresher = new TargetsRequestRefresher(this.name, this::acceptTargets, this::EC);
+        new Timer().schedule(refresher, TARGET_REQ_REFRESH_RATE, TARGET_REQ_REFRESH_RATE);
+    }
+
+    private void acceptTargets(List<NewExecutionTargetDTO> newTargets) {
+        List<TaskTarget> list = new ArrayList<>();
+        newTargets.forEach(t -> {
+            TaskTarget target = new TaskTarget(t);
+            target.setExecutionName(this.name);
+            target.setType(this.type);
+            target.setPayedPrice(this.price);
+            // maybe add configDTO
+            list.add(target);
+        });
+        consumer.accept(list);
+    }
+
+
+    private void EC(String s) {
+        System.out.println(s);
+    }
+
+    public void pauseRequest() {
+        refresher.pause();
+    }
+
+    public void resumeRequest() {
+        refresher.resume();
+    }
+
+    public void setNewTargetsConsumer(Consumer<List<TaskTarget>> targets) {
+        this.consumer = targets;
     }
 }

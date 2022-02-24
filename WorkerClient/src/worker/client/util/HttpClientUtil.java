@@ -53,4 +53,15 @@ public class HttpClientUtil {
         HTTP_CLIENT.dispatcher().executorService().shutdown();
         HTTP_CLIENT.connectionPool().evictAll();
     }
+
+    public static void runAsyncWithBody(String finalUrl, RequestBody body, Callback callback) {
+        Request request = new Request.Builder()
+                .url(finalUrl)
+                .post(body)
+                .build();
+
+        Call call = HttpClientUtil.HTTP_CLIENT.newCall(request);
+        call.enqueue(callback);
+    }
+
 }
