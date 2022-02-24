@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import worker.client.util.Constants;
 import worker.client.util.HttpClientUtil;
 import worker.client.util.TaskUtil;
+import worker.logic.Worker;
 import worker.logic.target.TaskTarget;
 
 import java.io.IOException;
@@ -28,15 +29,14 @@ import static worker.client.util.Constants.TASK_NAME;
 
 public class TargetsRequestRefresher extends TimerTask {
     private final Consumer<List<NewExecutionTargetDTO>> targetsConsumer;
-    private final Consumer<String> errorConsumer;
+  //  private final Consumer<String> errorConsumer;
     private final BooleanProperty shouldUpdate;
-    private String taskName;
+    private final Worker worker;
 
-    public TargetsRequestRefresher(String taskName, Consumer<List<NewExecutionTargetDTO>> targetsConsumer, Consumer<String> errorConsumer) {
+    public TargetsRequestRefresher(Worker worker, Consumer<List<NewExecutionTargetDTO>> targetsConsumer) {
         this.targetsConsumer = targetsConsumer;
-        this.errorConsumer = errorConsumer;
         shouldUpdate = new SimpleBooleanProperty(true);
-        this.taskName = taskName;
+        this.worker=worker;
     }
 
     @Override
@@ -45,27 +45,33 @@ public class TargetsRequestRefresher extends TimerTask {
             return;
         }
 
-        String finalUrl = HttpUrl
-                .parse(Constants.TARGET_REQUEST)
-                .newBuilder()
-                .addQueryParameter(TASK_NAME, taskName)
-                .build()
-                .toString();
+        if(worker.isRegisterAny()) {
 
-        HttpClientUtil.runAsync(finalUrl, new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Platform.runLater(() -> errorConsumer.accept("Error: failed request"));
-            }
+            worker.getWorkerExecutions().forEach(taskName->{
+                String finalUrl = HttpUrl
+                        .parse(Constants.TARGET_REQUEST)
+                        .newBuilder()
+                        .addQueryParameter(TASK_NAME, taskName)
+                        .build()
+                        .toString();
 
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                String responseBody = response.body().string();
-                JsonArray jsonArray = JsonParser.parseString(responseBody).getAsJsonArray();
-                List<NewExecutionTargetDTO> list = parseTargetsList(jsonArray);
-                targetsConsumer.accept(list);
-            }
-        });
+                HttpClientUtil.runAsync(finalUrl, new Callback() {
+                    @Override
+                    public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                        //  Platform.runLater(() -> errorConsumer.accept("Error: failed request"));
+                    }
+
+                    @Override
+                    public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                        String responseBody = response.body().string();
+                        JsonArray jsonArray = JsonParser.parseString(responseBody).getAsJsonArray();
+                        List<NewExecutionTargetDTO> list = parseTargetsList(jsonArray);
+                        targetsConsumer.accept(list);
+                    }
+                });
+            });
+
+        }
     }
 
     private List<NewExecutionTargetDTO> parseTargetsList(JsonArray jsonArray) {
