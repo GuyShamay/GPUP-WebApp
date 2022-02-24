@@ -7,10 +7,13 @@ import dto.target.FinishResultDTO;
 import dto.target.FinishedTargetDTO;
 import dto.target.NewExecutionTargetDTO;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import javafx.scene.control.Label;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
@@ -24,6 +27,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import static worker.client.util.Constants.GSON_INST;
 import static worker.client.util.Constants.TASK_NAME;
@@ -36,6 +40,8 @@ public class Worker {
     private ExecutorService threadsExecutor;
     private Map<String, WorkerExecution> workerExecutions; // list of registered tasks
     private final List<TaskTarget> targets;
+    BooleanProperty f;
+    IntegerProperty i;
 
     //private List<ExecutionDTO> listedExecutions;
 
@@ -48,6 +54,7 @@ public class Worker {
         targets = new ArrayList<>();
         workerExecutions = new HashMap<>();
         threadsExecutor = Executors.newFixedThreadPool(threadsCount);
+
         new Thread(() -> run()).start();
 
     }
@@ -137,7 +144,6 @@ public class Worker {
     private void runTarget(TaskTarget target) {
         System.out.println(target.getName() + " / " + target.getExecutionName() + ": DONE");
         /// implement task - compilation and simulation
-
 
 
         FinishedTargetDTO finishedTarget = new FinishedTargetDTO(target.getName(), target.getExecutionName(), target.getLogs(), this.name, FinishResultDTO.valueOf(target.getType().name()));

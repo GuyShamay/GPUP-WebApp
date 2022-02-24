@@ -10,6 +10,7 @@ import java.util.List;
 public class Target implements Cloneable {
     private final String name;
     private String userData;
+
     private List<Target> requiredForList;
     private List<Target> dependsOnList;
     private List<Target> justOpenedList;

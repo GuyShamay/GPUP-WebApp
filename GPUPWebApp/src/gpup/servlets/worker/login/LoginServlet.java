@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
+import static gpup.constants.Constants.THREADS;
 import static gpup.constants.Constants.USERNAME;
 
 public class LoginServlet extends HttpServlet {
@@ -22,7 +23,9 @@ public class LoginServlet extends HttpServlet {
         if (usernameFromSession == null) {
             //user is not logged
             String usernameFromParameter = request.getParameter(USERNAME);
-            if (usernameFromParameter == null || usernameFromParameter.isEmpty()) {
+            String threadsFromParameter = request.getParameter(THREADS);
+            if (usernameFromParameter == null || usernameFromParameter.isEmpty() ||
+                    threadsFromParameter == null || threadsFromParameter.isEmpty()   ) {
                 String errorMessage = "Conflict in Server state";
                 response.getOutputStream().print(errorMessage);
                 response.setStatus(HttpServletResponse.SC_CONFLICT);
@@ -39,6 +42,7 @@ public class LoginServlet extends HttpServlet {
                     } else {
                         userManager.addUser(usernameFromParameter, Role.Worker);
                         request.getSession(true).setAttribute(USERNAME, usernameFromParameter);
+                        request.getSession(true).setAttribute(THREADS, threadsFromParameter);
                         response.setStatus(HttpServletResponse.SC_OK);
                     }
                 }
