@@ -1,7 +1,5 @@
 package worker.client.component.dashboard;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dto.execution.ExecutionDTO;
 import javafx.application.Platform;
@@ -24,7 +22,6 @@ import worker.client.component.users.UsersListController;
 import worker.client.util.Constants;
 import worker.client.util.HttpClientUtil;
 
-import javax.swing.text.html.HTML;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.URL;

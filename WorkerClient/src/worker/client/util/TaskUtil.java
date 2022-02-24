@@ -7,10 +7,7 @@ import dto.execution.config.CompilationConfigDTO;
 import dto.execution.config.ConfigDTO;
 import dto.execution.config.SimulationConfigDTO;
 import dto.graph.GraphDTO;
-import dto.target.FinishResultDTO;
-import dto.target.RunResultDTO;
-import dto.target.TargetDTO;
-import dto.target.TargetTypeDTO;
+import dto.target.*;
 import dto.util.DTOUtil;
 import worker.logic.task.ExecutionType;
 import worker.logic.task.WorkerExecution;
@@ -176,5 +173,19 @@ public abstract class TaskUtil {
             execution.setExecutionDetails(parseExecutionDetails(jsonObject.get("executionDetails").getAsJsonObject(), DTOUtil.ExecutionTypeDTO.valueOf(execution.getType().name())));
         }
         return execution;
+    }
+
+    public static NewExecutionTargetDTO parseToNewExecutionTargetDTO(JsonObject jsonObject) {
+        if (jsonObject != null) {
+            NewExecutionTargetDTO newTarget = new NewExecutionTargetDTO();
+            if (jsonObject.has("userData")) {
+                newTarget.setUserData(jsonObject.get("userData").getAsString());
+            }
+            if (jsonObject.has("name")) {
+                newTarget.setName(jsonObject.get("name").getAsString());
+            }
+            return newTarget;
+        }
+        return null;
     }
 }
