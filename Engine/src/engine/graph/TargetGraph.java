@@ -187,7 +187,7 @@ public class TargetGraph implements Cloneable {
         targetMap.forEach(((s, target) -> {
             if (target.getType() == TargetType.Leaf || target.getType() == TargetType.Independent) {
                 target.setRunResult(RunResult.WAITING);
-                progressData.move(RunResult.FROZEN, RunResult.WAITING, target.getNameAndWorker());
+                progressData.move(RunResult.FROZEN, RunResult.WAITING, target.getName());
             }
         }));
     }

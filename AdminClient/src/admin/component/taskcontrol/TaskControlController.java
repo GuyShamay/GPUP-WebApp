@@ -136,6 +136,7 @@ public class TaskControlController implements Closeable {
     private void updateTask(RunExecutionDTO task) {
         System.out.println("update task");
         // update lists views
+        clearAll();
         frozenCol.setItems(task.getFrozen());
         waitingCol.setItems(task.getWaiting());
         inProcessCol.setItems(task.getInProcess());
@@ -157,6 +158,16 @@ public class TaskControlController implements Closeable {
         }
         // update progress:
         Platform.runLater(() -> progressBar.setProgress(task.getProgress()));
+    }
+
+    private void clearAll() {
+        frozenCol.getItems().clear();
+        waitingCol.getItems().clear();
+        inProcessCol.getItems().clear();
+        skippedCol.getItems().clear();
+        successCol.getItems().clear();
+       warningsCol.getItems().clear();
+       failureCol.getItems().clear();
     }
 
     // --------------------------------------------------------------------------------------------------------------

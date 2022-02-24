@@ -25,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import worker.client.util.Constants;
 import worker.client.util.HttpClientUtil;
+import worker.logic.target.TargetStatus;
 import worker.logic.target.TaskTarget;
 import worker.logic.task.TargetsRequestRefresher;
 import worker.logic.task.WorkerExecution;
@@ -62,12 +63,7 @@ public class Worker {
         threadsCount = 0;
         targets = new ArrayList<>();
         workerExecutions = new HashMap<>();
-
         isAlive = true;
-
-        threadsExecutor = Executors.newFixedThreadPool(threadsCount);
-
-        new Thread(() -> run()).start();
     }
 
     public ObservableList<TaskTarget> getTargets() {
@@ -110,6 +106,7 @@ public class Worker {
         this.threadsCount = threadsCount;
         threadsExecutor = Executors.newFixedThreadPool(this.threadsCount);
         startRefresher();
+        new Thread(() -> run()).start();
     }
 
     public boolean isRegisterAny() {
@@ -130,19 +127,37 @@ public class Worker {
 
         while (isAlive) {
             workerExecutions.forEach((s, exec) -> {
-                TaskTarget target = targets.stream()
-                        .filter(taskTarget -> taskTarget.getStatus() == null && taskTarget.getExecutionName().equals(exec.getName()))
-                        .findFirst().get(); // the first target from the task that didn't process yet
-                Runnable r = () -> {
-                    try {
-                        runTarget(target);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                };
-                Future<?> f = threadsExecutor.submit(r);
-                futures.add(f);
-            });
+                        targets.forEach(taskTarget -> {
+                            if (taskTarget.getStatus() == null && taskTarget.getExecutionName().equals(exec.getName())) {
+                                taskTarget.setStatus(TargetStatus.InProcess);
+                                Runnable r = () -> {
+                                    try {
+                                        runTarget(taskTarget);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                };
+                                Future<?> f = threadsExecutor.submit(r);
+                                futures.add(f);
+                            }
+                        });
+                    });
+//
+//                TaskTarget target = targets.stream()
+//                        .filter(taskTarget -> taskTarget.getStatus() == null && taskTarget.getExecutionName().equals(exec.getName()))
+//                        .findFirst().get(); // the first target from the task that didn't process yet
+//                if(target!=null) {
+//                    Runnable r = () -> {
+//                        try {
+//                            runTarget(target);
+//                        } catch (Exception e) {
+//                            e.printStackTrace();
+//                        }
+//                    };
+//                    Future<?> f = threadsExecutor.submit(r);
+//                    futures.add(f);
+//                }
+//            });
         }
     }
 
@@ -151,21 +166,21 @@ public class Worker {
         /// implement task - compilation and simulation
 
 
-        FinishedTargetDTO finishedTarget = new FinishedTargetDTO(target.getName(), target.getExecutionName(), target.getLogs(), this.name, FinishResultDTO.valueOf(target.getType().name()));
-
-        String finishedTargetAsString = GSON_INST.toJson(finishedTarget);
-        RequestBody body = RequestBody.create(finishedTargetAsString, MediaType.parse("application/json"));
-
-        HttpClientUtil.runAsyncWithBody(Constants.SEND_TARGET, body, new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-            }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-
-            }
-        });
+//        FinishedTargetDTO finishedTarget = new FinishedTargetDTO(target.getName(), target.getExecutionName(), target.getLogs(), this.name, FinishResultDTO.valueOf(target.getType().name()));
+//
+//        String finishedTargetAsString = GSON_INST.toJson(finishedTarget);
+//        RequestBody body = RequestBody.create(finishedTargetAsString, MediaType.parse("application/json"));
+//
+//        HttpClientUtil.runAsyncWithBody(Constants.SEND_TARGET, body, new Callback() {
+//            @Override
+//            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+//            }
+//
+//            @Override
+//            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+//
+//            }
+//        });
     }
 
     public void startRefresher() {

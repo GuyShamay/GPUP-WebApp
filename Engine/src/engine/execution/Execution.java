@@ -228,8 +228,7 @@ public class Execution {
             for (int i = 0; i < totalToSend; i++) {
                 Target currentTarget = waitingList.remove(0);
                 changeRunResult(RunResult.WAITING, RunResult.INPROCESS, currentTarget);
-                NewExecutionTargetDTO t = new NewExecutionTargetDTO(currentTarget);
-                t.setExecuitonName(this.name);
+                NewExecutionTargetDTO t = new NewExecutionTargetDTO(currentTarget,this.name);
                 list.add(t);
             }
             return list;

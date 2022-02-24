@@ -63,9 +63,11 @@ public class TargetsRequestRefresher extends TimerTask {
                     @Override
                     public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                         String responseBody = response.body().string();
-                        JsonArray jsonArray = JsonParser.parseString(responseBody).getAsJsonArray();
-                        List<NewExecutionTargetDTO> list = parseTargetsList(jsonArray);
-                        targetsConsumer.accept(list);
+                        if(responseBody!=null && !responseBody.isEmpty()) {
+                            JsonArray jsonArray = JsonParser.parseString(responseBody).getAsJsonArray();
+                            List<NewExecutionTargetDTO> list = parseTargetsList(jsonArray);
+                            targetsConsumer.accept(list);
+                        }
                     }
                 });
             });
