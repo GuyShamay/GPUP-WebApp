@@ -7,30 +7,38 @@ import dto.target.FinishResultDTO;
 import dto.target.FinishedTargetDTO;
 import dto.target.NewExecutionTargetDTO;
 import javafx.application.Platform;
+
+import javafx.beans.InvalidationListener;
+
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.scene.control.Label;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import worker.client.util.Constants;
 import worker.client.util.HttpClientUtil;
 import worker.logic.target.TaskTarget;
+import worker.logic.task.TargetsRequestRefresher;
 import worker.logic.task.WorkerExecution;
 
 import java.io.IOException;
+import java.security.Key;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import static worker.client.util.Constants.GSON_INST;
-import static worker.client.util.Constants.TASK_NAME;
+import static worker.client.util.Constants.*;
+import static worker.client.util.Constants.TARGET_REQ_REFRESH_RATE;
 
 public class Worker {
     private String name;
@@ -40,23 +48,26 @@ public class Worker {
     private ExecutorService threadsExecutor;
     private Map<String, WorkerExecution> workerExecutions; // list of registered tasks
     private final List<TaskTarget> targets;
-    BooleanProperty f;
-    IntegerProperty i;
+
+    private TargetsRequestRefresher refresher;
+    private boolean isAlive;
 
     //private List<ExecutionDTO> listedExecutions;
-
     // for task table in tasks screen:
     //              http req from engine: getExecutionByWorker
+
     public Worker() {
         credit = new SimpleIntegerProperty(0);
         busyThreads = 0;
         threadsCount = 0;
         targets = new ArrayList<>();
         workerExecutions = new HashMap<>();
+
+        isAlive = true;
+
         threadsExecutor = Executors.newFixedThreadPool(threadsCount);
 
         new Thread(() -> run()).start();
-
     }
 
     public ObservableList<TaskTarget> getTargets() {
@@ -98,6 +109,7 @@ public class Worker {
     public void initThreadsExecutor(int threadsCount) {
         this.threadsCount = threadsCount;
         threadsExecutor = Executors.newFixedThreadPool(this.threadsCount);
+        startRefresher();
     }
 
     public boolean isRegisterAny() {
@@ -113,17 +125,10 @@ public class Worker {
         return new ArrayList<>(workerExecutions.keySet());
     }
 
-    public void acceptTargets(List<TaskTarget> newTargets) {
-        if (newTargets != null || !newTargets.isEmpty()) {
-            targets.addAll(newTargets);
-        }
-
-    }
-
     public void run() {
         List<Future<?>> futures = new ArrayList<>();
 
-        while (true) {
+        while (isAlive) {
             workerExecutions.forEach((s, exec) -> {
                 TaskTarget target = targets.stream()
                         .filter(taskTarget -> taskTarget.getStatus() == null && taskTarget.getExecutionName().equals(exec.getName()))
@@ -161,5 +166,36 @@ public class Worker {
 
             }
         });
+    }
+
+    public void startRefresher() {
+        refresher = new TargetsRequestRefresher(this,this::acceptTargets);
+        new Timer().schedule(refresher, TARGET_REQ_REFRESH_RATE, TARGET_REQ_REFRESH_RATE);
+    }
+
+    private void acceptTargets(List<NewExecutionTargetDTO> newTargets) {
+        newTargets.forEach(t -> {
+            TaskTarget target = new TaskTarget(t);
+            WorkerExecution workerExecution = workerExecutions.get(t.getExecutionName());
+            target.setPayedPrice(workerExecution.getPrice());
+            target.setType(workerExecution.getType());
+            target.setStatus(null);
+            // maybe add configDTO
+            targets.add(target);
+        });
+    }
+
+    public boolean isAvailableThreads() {
+      return (threadsCount - ((ThreadPoolExecutor)threadsExecutor).getActiveCount() > 0);
+    }
+
+    public Set<String> getWorkerExecutions() {
+        return workerExecutions.keySet();
+    }
+
+    public void shutdown() {
+        isAlive=false;
+        //Somethingbefore?
+        threadsExecutor.shutdownNow();
     }
 }

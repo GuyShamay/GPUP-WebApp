@@ -184,6 +184,9 @@ public abstract class TaskUtil {
             if (jsonObject.has("name")) {
                 newTarget.setName(jsonObject.get("name").getAsString());
             }
+            if (jsonObject.has("executionName")) {
+                newTarget.setExecutionName(jsonObject.get("executionName").getAsString());
+            }
             return newTarget;
         }
         return null;

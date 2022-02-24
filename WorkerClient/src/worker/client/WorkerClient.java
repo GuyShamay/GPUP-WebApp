@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import worker.client.component.main.WorkerMainController;
 import worker.client.util.HttpClientUtil;
+import worker.logic.Worker;
 
 import java.io.IOException;
 import java.net.URL;

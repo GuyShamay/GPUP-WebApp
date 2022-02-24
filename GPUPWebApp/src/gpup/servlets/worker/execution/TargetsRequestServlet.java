@@ -27,6 +27,8 @@ public class TargetsRequestServlet extends HttpServlet {
     private void processRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("application/json");
         String taskNameFromParameter = request.getParameter(TASK_NAME);
+
+        NewEngine engine = ServletUtils.getEngine(getServletContext());
         String username = SessionUtils.getUsername(request);
         Integer threadsCount = SessionUtils.getWorkerThreads(request);
         if (username != null || threadsCount != null) {
