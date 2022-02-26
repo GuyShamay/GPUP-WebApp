@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -89,7 +88,11 @@ public class WorkerMainController implements Closeable {
 
         if (isLoggedIn) {
             unregisterTasks();
-            worker.shutdown();
+            try {
+                worker.shutdown();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             logout();
         }
     }
@@ -220,7 +223,7 @@ public class WorkerMainController implements Closeable {
     private void startTargetsControlRefresher() {
         targetsControlRefresher = new TargetsControlRefresher(this::updateTargetsTable);
         targetsTimer = new Timer();
-        targetsTimer.schedule(targetsControlRefresher, CONTROL_REFRESH_RATE, CONTROL_REFRESH_RATE);
+        targetsTimer.schedule(targetsControlRefresher, REFRESH_RATE, REFRESH_RATE);
     }
 
     private void startTasksControlRefresher() {
@@ -231,12 +234,14 @@ public class WorkerMainController implements Closeable {
 
     public void pauseTasksControlRefresher() {
         tasksControlRefresher.pause();
+        worker.pauseLightRefresher();
         // pause lightWorkerExecutionRefresher
         // boolean property -> false
     }
 
     public void resumeTasksControlRefresher() {
         tasksControlRefresher.resume();
+        worker.resumeLightRefresher();
         // resume lightWorkerExecutionRefresher
         // boolean property -> true
     }
@@ -255,7 +260,7 @@ public class WorkerMainController implements Closeable {
     }
 
     public void updateTargetsTable(Void v) {
-        controlPanelController.updateTargetsTable(worker.getTargets());
+        controlPanelController.updateTargetsTable(worker.getObservableTargets());
     }
 
     public void updateTasksTable(Void v) {

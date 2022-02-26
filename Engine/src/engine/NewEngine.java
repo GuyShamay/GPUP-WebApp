@@ -1,6 +1,7 @@
 package engine;
 
 import dto.execution.ExecutionDTO;
+import dto.execution.LightWorkerExecution;
 import dto.execution.RunExecutionDTO;
 import dto.execution.WorkerExecutionDTO;
 import dto.execution.config.*;
@@ -24,6 +25,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class NewEngine {
     private Map<String, TargetGraph> graphsList;
@@ -189,15 +191,14 @@ public class NewEngine {
     }
 
     public void addExecution(ExistExecutionConfigDTO exeConfigDTO) {
-        try {
-            Execution execution = parseExistExeConfigToExecution(exeConfigDTO);
+
+        Execution execution = parseExistExeConfigToExecution(exeConfigDTO);
+        if (execution != null) {
             synchronized (this) {
                 tasksList.put(execution.getName(), execution);
             }
-        } catch (RuntimeException ex) {
-            System.out.println("Null exception!");
-            System.out.println(ex.getMessage());
-            ////// ADD //////
+        } else {
+            throw new IllegalArgumentException("Can't run Incremental on fully finished task");
         }
     }
 
@@ -214,7 +215,10 @@ public class NewEngine {
         {
             execution.fromScratchReset();
         } else {
-            execution.checkValidIncremental();        // if incremental chosen, and all targets are finished -> from scratch
+            if (!execution.checkValidIncremental()) {
+                // if incremental chosen, and all targets are finished: can't run incremental
+                return null;
+            }
         }
         return execution;
     }
@@ -280,12 +284,28 @@ public class NewEngine {
     }
 
     public List<NewExecutionTargetDTO> requestExecutionTargets(String taskName, int threadsCount) {
-        return  tasksList.get(taskName).requestNewTargets(threadsCount);
+        return tasksList.get(taskName).requestNewTargets(threadsCount);
     }
 
-    public void setFinishedTarget(FinishedTargetDTO finishedTarget) {
+    public synchronized void setFinishedTarget(FinishedTargetDTO finishedTarget) {
         tasksList.get(finishedTarget.getExecutionName()).setFinishedTarget(finishedTarget);
     }
+
+    public int getExecutionLogsVersion(String taskName) {
+        return tasksList.get(taskName).getLogsVersions();
+    }
+
+    public List<String> getExecutionLogsEntries(String taskName, int version) {
+        return tasksList.get(taskName).getLogsEntries(version);
+    }
+
+    public synchronized List<LightWorkerExecution> getLightWorkerExecutions(String workerName) {
+        List<LightWorkerExecution> list = new ArrayList<>();
+        tasksList.values()
+                .stream()
+                .filter(execution -> execution.isWorkerExist(workerName))
+                .collect(Collectors.toList()).forEach(e -> list.add(new LightWorkerExecution(e)));
+        return list;
 
     public boolean isExecActive(String taskNameFromParameter) {
         return tasksList.get(taskNameFromParameter).getExecutionStatus()==ExecutionStatus.Active;
@@ -301,5 +321,6 @@ public class NewEngine {
 
     public boolean isExecDone(String taskNameFromParameter) {
         return tasksList.get(taskNameFromParameter).getExecutionStatus()==ExecutionStatus.Done;
+
     }
 }

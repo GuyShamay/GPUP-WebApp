@@ -194,8 +194,8 @@ public class TasksListController implements Closeable {
         stage.showAndWait();
     }
 
-    public void createTask(String taskName) {
-        updateTasksListMsgLabel("success!", false);
+    public void createTask() {
+        //updateTasksListMsgLabel("success!", false);
         ExistExecutionConfigDTO exeConfigDTO = buildExecutionConfig();
         uploadExecutionRequest(exeConfigDTO);
         postTaskCreating();

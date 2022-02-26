@@ -8,17 +8,27 @@ public class FinishedTargetDTO {
     private String executionName;
     private String logs;
     private String worker;
+    private String processingTime;
     private FinishResultDTO finishResult;
 
-    public FinishedTargetDTO(String name, String executionName, String logs, String worker, FinishResultDTO finishResult) {
+    public FinishedTargetDTO(String name, String executionName, String logs, String worker, FinishResultDTO finishResult, String processingTime) {
         this.name = name;
         this.executionName = executionName;
         this.logs = logs;
         this.worker = worker;
         this.finishResult = finishResult;
+        this.processingTime = processingTime;
     }
 
     public FinishedTargetDTO() {
+    }
+
+    public String getProcessingTime() {
+        return processingTime;
+    }
+
+    public void setProcessingTime(String processingTime) {
+        this.processingTime = processingTime;
     }
 
     public String getName() {

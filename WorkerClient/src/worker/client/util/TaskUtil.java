@@ -3,6 +3,7 @@ package worker.client.util;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import dto.execution.ExecutionDTO;
+import dto.execution.LightWorkerExecution;
 import dto.execution.config.CompilationConfigDTO;
 import dto.execution.config.ConfigDTO;
 import dto.execution.config.SimulationConfigDTO;
@@ -204,5 +205,20 @@ public abstract class TaskUtil {
             }
         });
         return result[0];
+    }
+
+    public static LightWorkerExecution parseToLightWorkerExecution(JsonObject jsonObject) {
+
+        LightWorkerExecution lightExec = new LightWorkerExecution();
+        if (jsonObject.has("name")) {
+            lightExec.setName(jsonObject.get("name").getAsString());
+        }
+        if (jsonObject.has("workers")) {
+            lightExec.setWorkers(jsonObject.get("workers").getAsInt());
+        }
+        if (jsonObject.has("progress")) {
+            lightExec.setProgress(jsonObject.get("progress").getAsDouble());
+        }
+        return lightExec;
     }
 }

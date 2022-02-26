@@ -1,5 +1,6 @@
 package worker.client.component.control;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -48,7 +49,7 @@ public class ControlPanelController {
 
     public void setBusyThreadsProperty(IntegerProperty busyThreads) {
         this.busyThreads = busyThreads;
-        busyThreadsLabel.textProperty().bind(busyThreads.asString());
+        busyThreadsLabel.textProperty().bind(Bindings.concat(busyThreads.asString(), "/", worker.getThreadsCount()));
     }
 
     public ControlPanelController() {

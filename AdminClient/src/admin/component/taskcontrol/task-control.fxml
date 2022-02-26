@@ -12,6 +12,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="400.0" minWidth="600.0" prefHeight="500.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="admin.component.taskcontrol.TaskControlController">
@@ -36,8 +37,6 @@
                   <ProgressBar fx:id="progressBar" layoutX="452.0" layoutY="14.0" prefHeight="0.0" prefWidth="254.0" progress="0.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="14.0" />
                   <Separator layoutX="372.0" layoutY="4.0" orientation="VERTICAL" prefHeight="43.0" prefWidth="0.0" AnchorPane.rightAnchor="279.0" AnchorPane.topAnchor="4.0" />
                   <Separator layoutX="19.0" layoutY="52.0" prefHeight="0.0" prefWidth="622.0" AnchorPane.leftAnchor="19.0" AnchorPane.rightAnchor="15.0" />
-                  <Label id="lblTitle" layoutX="20.0" layoutY="13.0" text="Task Message:" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="13.0" />
-                  <Label fx:id="taskMessageLabel" layoutX="139.0" layoutY="18.0" prefHeight="21.0" prefWidth="237.0" styleClass="lblTaskMsg" AnchorPane.topAnchor="17.0" />
                   <GridPane layoutX="-1.0" layoutY="58.0" prefHeight="467.0" prefWidth="656.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="58.0">
                      <columnConstraints>
                         <ColumnConstraints hgrow="NEVER" maxWidth="15.0" minWidth="10.0" prefWidth="15.0" />
@@ -58,6 +57,7 @@
                      </columnConstraints>
                      <rowConstraints>
                         <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="NEVER" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="NEVER" />
                         <RowConstraints minHeight="10.0" valignment="CENTER" vgrow="NEVER" />
                         <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="NEVER" />
                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
@@ -69,43 +69,60 @@
                         <RowConstraints maxHeight="15.0" minHeight="15.0" prefHeight="15.0" vgrow="NEVER" />
                      </rowConstraints>
                      <children>
-                        <ListView fx:id="frozenCol" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.rowSpan="2" />
-                        <ListView fx:id="waitingCol" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="3" GridPane.rowSpan="2" />
-                        <ListView fx:id="skippedCol" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="7" GridPane.rowIndex="3" GridPane.rowSpan="2" />
-                        <ListView fx:id="failureCol" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="9" GridPane.rowIndex="3" GridPane.rowSpan="2" />
-                        <ListView fx:id="warningsCol" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="11" GridPane.rowIndex="3" GridPane.rowSpan="2" />
-                        <ScrollPane fitToHeight="true" fitToWidth="true" minHeight="80.0" GridPane.columnIndex="13" GridPane.rowIndex="3" GridPane.rowSpan="2" GridPane.vgrow="ALWAYS">
+                        <ListView fx:id="frozenCol" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4" GridPane.rowSpan="2" />
+                        <ListView fx:id="waitingCol" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="4" GridPane.rowSpan="2" />
+                        <ListView fx:id="skippedCol" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="7" GridPane.rowIndex="4" GridPane.rowSpan="2" />
+                        <ListView fx:id="failureCol" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="9" GridPane.rowIndex="4" GridPane.rowSpan="2" />
+                        <ListView fx:id="warningsCol" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="11" GridPane.rowIndex="4" GridPane.rowSpan="2" />
+                        <ScrollPane fitToHeight="true" fitToWidth="true" minHeight="80.0" GridPane.columnIndex="13" GridPane.rowIndex="4" GridPane.rowSpan="2" GridPane.vgrow="ALWAYS">
                            <content>
                               <ListView fx:id="successCol" prefHeight="200.0" prefWidth="200.0" />
                            </content>
                         </ScrollPane>
-                        <Label id="lblcol" text="Frozen" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                        <Label id="lblcol" text="Inprocess" GridPane.columnIndex="5" GridPane.rowIndex="2" />
-                        <Label id="lblcol" text="Skipped" GridPane.columnIndex="7" GridPane.rowIndex="2" />
-                        <Label id="lblcol" text="Failure" GridPane.columnIndex="9" GridPane.rowIndex="2" />
-                        <Label id="lblcol" text="Warnings" GridPane.columnIndex="11" GridPane.rowIndex="2" />
-                        <Label id="lblcol" text="Success" GridPane.columnIndex="13" GridPane.rowIndex="2" />
-                        <Label id="lblColFinish" text="Finished" GridPane.columnIndex="11" />
-                        <Separator prefWidth="200.0" GridPane.columnIndex="9" GridPane.columnSpan="5" GridPane.rowIndex="1" />
-                        <Label id="lblcol" text="Waiting" GridPane.columnIndex="3" GridPane.rowIndex="2" />
-                        <Label id="lblTitle" text="Task's Run Results" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="6" />
-                        <Label fx:id="labelSkipped" styleClass="lblCount" GridPane.columnIndex="7" GridPane.rowIndex="8" />
-                        <Label fx:id="labelSuccess" styleClass="lblCount" GridPane.columnIndex="13" GridPane.rowIndex="8" />
-                        <Label fx:id="labelWarnings" styleClass="lblCount" GridPane.columnIndex="11" GridPane.rowIndex="8" />
-                        <Label fx:id="labelFailure" styleClass="lblCount" GridPane.columnIndex="9" GridPane.rowIndex="8" />
-                        <Label text="Skipped" GridPane.columnIndex="7" GridPane.rowIndex="6" />
-                        <Label text="Failure" GridPane.columnIndex="9" GridPane.rowIndex="6" />
-                        <Label text="Warnings" GridPane.columnIndex="11" GridPane.rowIndex="6" />
-                        <Label text="Success" GridPane.columnIndex="13" GridPane.rowIndex="6" />
-                        <Label fx:id="labelTaskStatus" alignment="TOP_LEFT" prefHeight="43.0" prefWidth="184.0" wrapText="true" GridPane.columnIndex="1" GridPane.columnSpan="4" GridPane.rowIndex="7" GridPane.rowSpan="3" />
-                        <ListView fx:id="inProcessCol" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="3" GridPane.rowSpan="2" />
-                        <Label text="Total" GridPane.columnIndex="5" GridPane.rowIndex="6" />
-                        <Label fx:id="labelTotal" prefHeight="30.0" prefWidth="64.0" styleClass="lblCount" GridPane.columnIndex="5" GridPane.rowIndex="8" />
-                        <Separator prefWidth="200.0" styleClass="sep" GridPane.columnIndex="1" GridPane.columnSpan="13" GridPane.rowIndex="5" />
-                        <Separator prefWidth="200.0" styleClass="sep" GridPane.columnIndex="5" GridPane.columnSpan="9" GridPane.rowIndex="7" />
-                        <Separator orientation="VERTICAL" prefHeight="45.0" prefWidth="0.0" styleClass="sep" GridPane.columnIndex="4" GridPane.rowIndex="6" GridPane.rowSpan="3" />
+                        <Label id="lblcol" text="Frozen" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="3" />
+                        <Label id="lblcol" text="Inprocess" GridPane.columnIndex="5" GridPane.rowIndex="3" />
+                        <Label id="lblcol" text="Skipped" GridPane.columnIndex="7" GridPane.rowIndex="3" />
+                        <Label id="lblcol" text="Failure" GridPane.columnIndex="9" GridPane.rowIndex="3" />
+                        <Label id="lblcol" text="Warnings" GridPane.columnIndex="11" GridPane.rowIndex="3" />
+                        <Label id="lblcol" text="Success" GridPane.columnIndex="13" GridPane.rowIndex="3" />
+                        <Label id="lblColFinish" text="Finished" GridPane.columnIndex="11" GridPane.rowIndex="1" />
+                        <Separator prefWidth="200.0" GridPane.columnIndex="9" GridPane.columnSpan="5" GridPane.rowIndex="2" />
+                        <Label id="lblcol" text="Waiting" GridPane.columnIndex="3" GridPane.rowIndex="3" />
+                        <Label id="lblTitle" text="Task's Run Results" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="7" />
+                        <Label fx:id="labelSkipped" styleClass="lblCount" GridPane.columnIndex="7" GridPane.rowIndex="9" />
+                        <Label fx:id="labelSuccess" styleClass="lblCount" GridPane.columnIndex="13" GridPane.rowIndex="9" />
+                        <Label fx:id="labelWarnings" styleClass="lblCount" GridPane.columnIndex="11" GridPane.rowIndex="9" />
+                        <Label fx:id="labelFailure" styleClass="lblCount" GridPane.columnIndex="9" GridPane.rowIndex="9" />
+                        <Label text="Skipped" GridPane.columnIndex="7" GridPane.rowIndex="7" />
+                        <Label text="Failure" GridPane.columnIndex="9" GridPane.rowIndex="7" />
+                        <Label text="Warnings" GridPane.columnIndex="11" GridPane.rowIndex="7" />
+                        <Label text="Success" GridPane.columnIndex="13" GridPane.rowIndex="7" />
+                        <Label fx:id="labelTaskStatus" alignment="TOP_LEFT" prefHeight="43.0" prefWidth="184.0" wrapText="true" GridPane.columnIndex="1" GridPane.columnSpan="4" GridPane.rowIndex="8" GridPane.rowSpan="3" />
+                        <ListView fx:id="inProcessCol" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="4" GridPane.rowSpan="2" />
+                        <Separator prefWidth="200.0" styleClass="sep" GridPane.columnIndex="1" GridPane.columnSpan="13" GridPane.rowIndex="6" />
+                        <Separator prefHeight="1.0" prefWidth="343.0" styleClass="sep" GridPane.columnIndex="7" GridPane.columnSpan="7" GridPane.rowIndex="8" />
+                        <Separator orientation="VERTICAL" prefHeight="45.0" prefWidth="0.0" styleClass="sep" GridPane.columnIndex="6" GridPane.rowIndex="7" GridPane.rowSpan="3" />
+                        <Label id="lblTitle" alignment="CENTER" text="Task Message:" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.halignment="LEFT" GridPane.rowIndex="1" />
+                        <Label fx:id="taskMessageLabel" prefHeight="21.0" prefWidth="237.0" styleClass="lblTaskMsg" GridPane.columnIndex="3" GridPane.columnSpan="5" GridPane.rowIndex="1" />
+                        <HBox prefHeight="100.0" prefWidth="200.0" spacing="3.0" GridPane.columnIndex="1" GridPane.columnSpan="13">
+                           <children>
+                              <Label text="Workers:" />
+                              <Label fx:id="workersLabel" prefHeight="21.0" prefWidth="35.0" style="-fx-font-weight: bold;" />
+                              <Label text="     " />
+                              <Label text="Targets:" />
+                              <Label fx:id="labelTotal" prefHeight="21.0" prefWidth="26.0" style="-fx-font-weight: bold;" />
+                              <Label text="     " />
+                              <Separator orientation="VERTICAL" prefHeight="200.0" />
+                              <Label text="(I,L,M,R):" />
+                              <Label fx:id="ilmrLabel" prefHeight="21.0" prefWidth="129.0" style="-fx-font-weight: bold;" />
+                           </children>
+                        </HBox>
                      </children>
                   </GridPane>
+                  <Label layoutX="14.0" layoutY="4.0" text="Task:" AnchorPane.leftAnchor="10.0" />
+                  <Label fx:id="taskNameLabel" layoutX="50.0" layoutY="4.0" prefHeight="21.0" prefWidth="298.0" style="-fx-font-weight: bold;" AnchorPane.leftAnchor="56.0" />
+                  <Label layoutX="15.0" layoutY="24.0" text="Graph:" AnchorPane.leftAnchor="10.0" />
+                  <Label fx:id="graphNameLabel" layoutX="56.0" layoutY="24.0" prefHeight="21.0" prefWidth="289.0" style="-fx-font-weight: bold;" AnchorPane.leftAnchor="56.0" />
                </children>
             </AnchorPane>
          </content>
