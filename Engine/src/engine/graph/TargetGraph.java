@@ -171,7 +171,7 @@ public class TargetGraph implements Cloneable {
     }
 
     public boolean checkValidIncremental() {
-        if (targetMap.values().stream().filter(target -> !target.getRunResult().equals(RunResult.FINISHED)).count() == 0) {
+        if (targetMap.values().stream().filter(target -> (!target.getRunResult().equals(RunResult.FINISHED)||target.getFinishResult()==(FinishResult.FAILURE))).count() == 0) {
             // all targets finished
             //fromScratchReset();
             return false;

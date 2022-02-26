@@ -331,7 +331,11 @@ public class Execution {
 
             targets.forEach(targetName -> {
                 dependsOn.put(targetName, new LinkedList<>());
-                targetMap.put(targetName, baseTaskGraph.getTargetMap().get(targetName));
+                try {
+                    targetMap.put(targetName, baseTaskGraph.getTargetMap().get(targetName).clone());
+                } catch (CloneNotSupportedException e) {
+                    e.printStackTrace();
+                }
             });
 
             taskGraph.setDependsOnList(dependsOn);
