@@ -402,5 +402,9 @@ public class TargetGraph implements Cloneable {
         }
     }
 
+    public boolean doneProccesing() {
+        return targetMap.values().stream().allMatch(target -> target.getRunResult()==RunResult.FINISHED||target.getRunResult()==RunResult.SKIPPED);
+    }
+
     //----------------------------------------------------------------------------------------
 }

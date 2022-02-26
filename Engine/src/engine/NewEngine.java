@@ -306,5 +306,21 @@ public class NewEngine {
                 .filter(execution -> execution.isWorkerExist(workerName))
                 .collect(Collectors.toList()).forEach(e -> list.add(new LightWorkerExecution(e)));
         return list;
+
+    public boolean isExecActive(String taskNameFromParameter) {
+        return tasksList.get(taskNameFromParameter).getExecutionStatus()==ExecutionStatus.Active;
+    }
+
+    public boolean isExecPaused(String taskNameFromParameter) {
+        return tasksList.get(taskNameFromParameter).getExecutionStatus()==ExecutionStatus.Paused;
+    }
+
+    public boolean isExecStopped(String taskNameFromParameter) {
+        return tasksList.get(taskNameFromParameter).getExecutionStatus()==ExecutionStatus.Stopped;
+    }
+
+    public boolean isExecDone(String taskNameFromParameter) {
+        return tasksList.get(taskNameFromParameter).getExecutionStatus()==ExecutionStatus.Done;
+
     }
 }

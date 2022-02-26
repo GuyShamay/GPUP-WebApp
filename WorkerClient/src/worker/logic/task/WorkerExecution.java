@@ -29,7 +29,7 @@ public class WorkerExecution {
 
 
     public WorkerExecution() {
-        executionStatus = WorkerExecutionStatus.Registered;
+        executionStatus = WorkerExecutionStatus.Active;
         credit = 0;
         doneTargets = 0;
     }
@@ -67,8 +67,9 @@ public class WorkerExecution {
         this.executionStatus = WorkerExecutionStatus.Active;
     }
 
+    //NEEDED?
     public void stop() {
-        this.executionStatus = WorkerExecutionStatus.Unregistered;
+       // this.executionStatus = WorkerExecutionStatus.Unregistered;
     }
 
     public WorkerExecutionStatus getExecutionStatus() {
@@ -129,5 +130,9 @@ public class WorkerExecution {
 
     public Task getTask() {
         return task;
+    }
+
+    public void setExecutionStatus(WorkerExecutionStatus status) {
+        executionStatus=status;
     }
 }

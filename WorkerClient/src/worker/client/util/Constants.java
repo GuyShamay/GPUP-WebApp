@@ -38,4 +38,8 @@ public class Constants {
     public static final String SEND_TARGET = FULL_SERVER_PATH + WORKER + "/send-target";
     public static final String LIGHT_W_EXEC = FULL_SERVER_PATH + WORKER + "/light-worker-exec";
 
+    public final static int SC_EXEC_PAUSED= 220;
+    public final static int SC_EXEC_STOPPED= 221;
+    public final static int SC_EXEC_DONE= 222;
+    public final static int SC_EXEC_ON= 200;
 }

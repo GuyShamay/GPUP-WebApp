@@ -249,7 +249,6 @@ public class TaskControlController implements Closeable {
         resumeButton.setVisible(false);
         //-----------------------------//
         controlCommand(DTOUtil.ExecutionControlDTO.Stop);
-
     }
 
     private void play() {
