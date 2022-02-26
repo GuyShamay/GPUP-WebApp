@@ -26,10 +26,15 @@ public class TargetDTO {
     private Instant startWaitingTime;
     private Duration taskRunDuration;
 
+    private List<String> dependsOnToOpenList;
+    private List<String> skippedBecauseList;
+
     public TargetDTO(Target target) {
         initBasicData(target);
         initTypesAndResults(target);
         initTimes(target);
+        dependsOnToOpenList= new ArrayList<>();
+        skippedBecauseList= new ArrayList<>();
     }
 
     public TargetDTO() {
@@ -155,5 +160,34 @@ public class TargetDTO {
 
     public void setTaskRunDuration(Duration taskRunDuration) {
         this.taskRunDuration = taskRunDuration;
+    }
+
+    public void initRunningFields(Target target) {
+        dependsOnToOpenList = target.getDependsOnToOpenList();
+        skippedBecauseList = target.getSkippedBecauseList();
+    }
+
+    public void setSkippedBecauseList(List<String> skippedBecauseList) {
+        this.skippedBecauseList=skippedBecauseList;
+    }
+
+    public void setDependsOnToOpenList(List<String> dependsOnToOpenList) {
+        this.dependsOnToOpenList=dependsOnToOpenList;
+    }
+
+    public List<String> getDependsOnToOpenList() {
+        return dependsOnToOpenList;
+    }
+
+    public List<String> getSkippedBecauseList() {
+        return skippedBecauseList;
+    }
+
+    public Duration getWaitingTimeInMs() {
+        return Duration.ZERO;
+    }
+
+    public Duration getProcessingTimeInMs() {
+        return Duration.ZERO;
     }
 }

@@ -170,7 +170,7 @@ public class TargetGraph implements Cloneable {
     }
 
     public boolean checkValidIncremental() {
-        if (targetMap.values().stream().filter(target -> !target.getRunResult().equals(RunResult.FINISHED)).count() == 0) {
+        if (targetMap.values().stream().filter(target -> (!target.getRunResult().equals(RunResult.FINISHED)||target.getFinishResult()==(FinishResult.FAILURE))).count() == 0) {
             // all targets finished
             //fromScratchReset();
             return false;
@@ -403,6 +403,14 @@ public class TargetGraph implements Cloneable {
 
     public boolean doneProccesing() {
         return targetMap.values().stream().allMatch(target -> target.getRunResult()==RunResult.FINISHED||target.getRunResult()==RunResult.SKIPPED);
+    }
+
+    public void setDependsOnList(Map<String, List<Target>> dependsOn) {
+        dependsOnGraph=dependsOn;
+    }
+
+    public void setTargetMap(Map<String, Target> targetMap) {
+        this.targetMap=targetMap;
     }
 
     //----------------------------------------------------------------------------------------

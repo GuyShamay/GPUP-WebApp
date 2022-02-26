@@ -4,12 +4,16 @@ import dto.execution.config.ConfigDTO;
 import dto.execution.config.ExecutionConfigDTO;
 import dto.target.FinishedTargetDTO;
 import dto.target.NewExecutionTargetDTO;
+import dto.target.TargetDTO;
 import engine.graph.TargetGraph;
+import engine.graph.TargetGraphUtil;
 import engine.progressdata.ProgressData;
 import engine.target.FinishResult;
 import engine.target.Result;
 import engine.target.RunResult;
 import engine.target.Target;
+import old.component.target.oldFinishResult;
+import old.component.target.oldTarget;
 
 import java.io.*;
 import java.lang.invoke.ConstantCallSite;
@@ -333,5 +337,49 @@ public class Execution {
     public ExecutionStatus getExecutionStatus() {
         return status;
 
+    }
+
+    public TargetDTO getTargetDTORealTime(String targetName) {
+        Target t = taskGraph.getTargetMap().get(targetName);
+        TargetDTO res = new TargetDTO(t);
+        res.initRunningFields(t);
+        return res;
+    }
+
+    public void createTaskGraphIncremental(TargetGraph baseTaskGraph) {
+        List<String> targets = new ArrayList<>();
+        for (Target t : baseTaskGraph.getTargetMap().values()) {
+            if (t.getFinishResult() == FinishResult.FAILURE || t.getFinishResult() == null) {
+                targets.add(t.getName());
+            }
+        }
+
+            this.taskGraph = new TargetGraph(baseTaskGraph.getName(), baseTaskGraph.getCreatingUsername());
+            Map<String, List<Target>> dependsOn = new HashMap<>();
+            Map<String, Target> targetMap = new HashMap<>();
+
+            targets.forEach(targetName -> {
+                dependsOn.put(targetName, new LinkedList<>());
+                try {
+                    targetMap.put(targetName, baseTaskGraph.getTargetMap().get(targetName).clone());
+                } catch (CloneNotSupportedException e) {
+                    e.printStackTrace();
+                }
+            });
+
+            taskGraph.setDependsOnList(dependsOn);
+            taskGraph.setTargetMap(targetMap);
+
+            targetMap.values().forEach(target -> {
+                target.getDependsOnList().forEach(adj -> {
+                    if (targets.contains(adj.getName())) taskGraph.addEdge(target.getName(), adj);
+                });
+            });
+        }
+
+    public void prepareGraphIncremental() {
+        fromScratchReset();
+        TargetGraphUtil.updateTargetsType(taskGraph.getTargetMap());
+        updateLeavesAndIndependentsToWaiting();
     }
 }

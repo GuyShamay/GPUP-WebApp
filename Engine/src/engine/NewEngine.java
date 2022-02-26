@@ -15,6 +15,7 @@ import engine.execution.Execution;
 import engine.execution.ExecutionStatus;
 import engine.execution.ExecutionType;
 import engine.graph.TargetGraph;
+import engine.graph.TargetGraphUtil;
 import engine.jaxb.generated.v3.GPUPDescriptor;
 import engine.jaxb.parser.GPUPParser;
 import engine.target.TargetsRelationType;
@@ -209,15 +210,18 @@ public class NewEngine {
         execution.setCreatingUser(baseExec.getCreatingUser());
         execution.setPrice(baseExec.getPrice());
         execution.setType(baseExec.getType());
-        execution.createTaskGraph(baseExec.getTaskGraph());
         execution.setExecutionDetails(baseExec.getExecutionDetails());
         if (!exeConfigDTO.isIncremental()) // from scratch -> reset all targets run result
         {
+            execution.createTaskGraph(baseExec.getTaskGraph());
             execution.fromScratchReset();
         } else {
-            if (!execution.checkValidIncremental()) {
+            if (!baseExec.checkValidIncremental()) {
                 // if incremental chosen, and all targets are finished: can't run incremental
                 return null;
+            } else {
+                execution.createTaskGraphIncremental(baseExec.getTaskGraph());
+                execution.prepareGraphIncremental();
             }
         }
         return execution;
@@ -322,5 +326,13 @@ public class NewEngine {
     public boolean isExecDone(String taskNameFromParameter) {
         return tasksList.get(taskNameFromParameter).getExecutionStatus()==ExecutionStatus.Done;
 
+    }
+
+    public TargetDTO getTargetDTORealTime(String taskName, String targetName) {
+        return tasksList.get(taskName).getTargetDTORealTime(targetName);
+    }
+
+    public boolean isTaskInSystem(String taskNameFromParam) {
+        return tasksList.containsKey(taskNameFromParam);
     }
 }

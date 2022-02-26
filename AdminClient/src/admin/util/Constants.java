@@ -55,6 +55,7 @@ public class Constants {
     public static final String PLAY_EXECUTION = FULL_SERVER_PATH + ADMIN + "/play-execution";
     public static final String EXECUTION_CONTROL = FULL_SERVER_PATH + ADMIN + "/execution-control";
     public static final String EXECUTION_LOGS = FULL_SERVER_PATH + ADMIN + "/execution-logs";
+    public static final String TARGET_REALTIME = FULL_SERVER_PATH + ADMIN + "/execution-target";
 
 
 }

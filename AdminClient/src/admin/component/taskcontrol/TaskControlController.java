@@ -2,16 +2,22 @@ package admin.component.taskcontrol;
 
 import admin.component.main.AdminMainController;
 import admin.util.Constants;
+import admin.util.GraphUtil;
 import admin.util.HttpClientUtil;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import dto.execution.ExecutionDTO;
 import dto.execution.LogsWithVersion;
 import dto.execution.RunExecutionDTO;
+import dto.target.TargetDTO;
 import dto.util.DTOUtil;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -25,12 +31,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.stream.Collectors;
 
-import static admin.util.Constants.REFRESH_RATE;
-import static admin.util.Constants.TASK;
+import static admin.util.Constants.*;
 
 public class TaskControlController implements Closeable {
 
@@ -107,6 +113,7 @@ public class TaskControlController implements Closeable {
     private final BooleanProperty runTaskAutoUpdate;
     private final BooleanProperty isEnded;
     private final BooleanProperty isRunning;
+    private  TargetDTO pickedTarget;
 
     public TaskControlController() {
         runTaskAutoUpdate = new SimpleBooleanProperty(true);
@@ -229,7 +236,11 @@ public class TaskControlController implements Closeable {
 
     @FXML
     void buttonGetStatusClicked(ActionEvent event) {
-        // ask data about target from server
+        if (!comboBoxTargetPick.getSelectionModel().isEmpty()) {
+            String targetName = comboBoxTargetPick.getSelectionModel().getSelectedItem();
+            new Thread(()->getTargetRealtime(targetName)).start();
+        }
+        comboBoxTargetPick.getSelectionModel().clearSelection();
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -239,6 +250,7 @@ public class TaskControlController implements Closeable {
 
         //-----------------------------//
         play();
+        updateTargetPick();
     }
 
     @FXML
@@ -265,6 +277,68 @@ public class TaskControlController implements Closeable {
         resumeButton.setVisible(false);
         //-----------------------------//
         controlCommand(DTOUtil.ExecutionControlDTO.Stop);
+    }
+
+    private void getTargetRealtime(String targetName){
+        String finalUrl = HttpUrl.parse(TARGET_REALTIME)
+                .newBuilder()
+                .addQueryParameter(TASK, currentTask.getName())
+                .addQueryParameter(TARGET_NAME, targetName)
+                .build()
+                .toString();
+
+        HttpClientUtil.runAsync(finalUrl, new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                String target = response.body().string();
+                JsonObject jsonObject = JsonParser.parseString(target).getAsJsonObject();
+                pickedTarget = GraphUtil.createTargetDTO(jsonObject);
+
+                String infoText = "";
+                Duration duration;
+                switch (pickedTarget.getRunResult()) {
+                    case FROZEN:
+                        infoText += "Frozen Until " + pickedTarget.getDependsOnToOpenList().toString() + " Will Finish";
+                        break;
+                    case WAITING:
+                        infoText += "Waiting Already :\n";
+                        duration = pickedTarget.getWaitingTimeInMs();
+                        infoText += String.format("%d min\n%02d sec\n%02d ms",
+                                duration.toMinutes(),
+                                duration.getSeconds(),
+                                duration.toMillis());
+                        break;
+                    case SKIPPED:
+                        infoText += "Skipped Because " + pickedTarget.getSkippedBecauseList().toString() + " Failed";
+                        break;
+                    case INPROCESS:
+                        infoText += "InProcces Already :\n";
+                        duration = pickedTarget.getProcessingTimeInMs();
+                        infoText += String.format("%d min\n%02d sec\n%02d ms",
+                                duration.toMinutes(),
+                                duration.getSeconds(),
+                                duration.toMillis());
+                        break;
+                    case FINISHED:
+                        infoText += "Finished With " + pickedTarget.getFinishResult();
+                        break;
+                }
+
+                String info = infoText;
+                Platform.runLater(() -> {
+                    labelPickedName.setText(targetName);
+                    labelPickedType.setText(pickedTarget.getType().toString());
+                    labelPickInfo.setText(info);
+
+                });
+            }
+        });
+
     }
 
     private void play() {
@@ -347,5 +421,10 @@ public class TaskControlController implements Closeable {
         warningsCol.getItems().clear();
         waitingCol.getItems().clear();
         successCol.getItems().clear();
+    }
+
+    private void updateTargetPick() {
+        ObservableList<String> list = FXCollections.observableArrayList(currentTask.getGraphDTO().getTargetsListByName());
+        comboBoxTargetPick.setItems(list);
     }
 }
