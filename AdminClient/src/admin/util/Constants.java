@@ -30,6 +30,7 @@ public class Constants {
     public static final String NO = "n";
     public static final String YES = "y";
     public static final String GRAPH_TASK = "graph-task";
+    public static final String VERSION = "ver";
 
     // Server Resources:
     public final static String BASE_DOMAIN = "localhost";
@@ -53,5 +54,7 @@ public class Constants {
     public static final String RUN_EXECUTION = FULL_SERVER_PATH + "/run-execution";
     public static final String PLAY_EXECUTION = FULL_SERVER_PATH + ADMIN + "/play-execution";
     public static final String EXECUTION_CONTROL = FULL_SERVER_PATH + ADMIN + "/execution-control";
+    public static final String EXECUTION_LOGS = FULL_SERVER_PATH + ADMIN + "/execution-logs";
+
 
 }

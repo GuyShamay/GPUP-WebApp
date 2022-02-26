@@ -41,6 +41,8 @@ public class Execution {
         progress = 0;
         progressData = new ProgressData();
         workers = new ArrayList<>();
+        play = false;
+        pause = false;
         doneTargets = new HashSet<>();
         logs = new ArrayList<>();
     }
@@ -301,7 +303,7 @@ public class Execution {
         if (version < 0 || version > logs.size()) {
             version = 0;
         }
-        return logs.subList(version, logs.size());}
+        return logs.subList(version, logs.size());
 
     public ExecutionStatus getExecutionStatus() {
         return status;

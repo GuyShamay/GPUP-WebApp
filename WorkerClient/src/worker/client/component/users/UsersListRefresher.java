@@ -19,14 +19,12 @@ import java.util.function.Consumer;
 public class UsersListRefresher extends TimerTask {
 
     private final Consumer<List<UserDTO>> usersListConsumer;
-    private final Consumer<String> errorConsumer;
     private final BooleanProperty shouldUpdate;
 
 
-    public UsersListRefresher(BooleanProperty shouldUpdate, Consumer<List<UserDTO>> usersListConsumer, Consumer<String> errorConsumer) {
+    public UsersListRefresher(BooleanProperty shouldUpdate, Consumer<List<UserDTO>> usersListConsumer) {
         this.shouldUpdate = shouldUpdate;
         this.usersListConsumer = usersListConsumer;
-        this.errorConsumer = errorConsumer;
     }
 
     @Override
@@ -38,7 +36,6 @@ public class UsersListRefresher extends TimerTask {
         HttpClientUtil.runAsync(Constants.USERS_LIST, new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                Platform.runLater(() -> errorConsumer.accept("Error: failed request"));
             }
 
             @Override

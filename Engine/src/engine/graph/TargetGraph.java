@@ -170,11 +170,13 @@ public class TargetGraph implements Cloneable {
         return targetMap.size();
     }
 
-    public void checkValidIncremental() {
+    public boolean checkValidIncremental() {
         if (targetMap.values().stream().filter(target -> !target.getRunResult().equals(RunResult.FINISHED)).count() == 0) {
             // all targets finished
-            fromScratchReset();
+            //fromScratchReset();
+            return false;
         }
+        return true;
     }
 
     public void clearJustOpenAndSkippedLists() {
@@ -189,6 +191,7 @@ public class TargetGraph implements Cloneable {
             }
         }));
     }
+
     public List<Target> getWaitingTargets() {
         List<Target> list = new ArrayList<>();
         targetMap.forEach(((s, target) -> {
@@ -397,6 +400,10 @@ public class TargetGraph implements Cloneable {
         } else {
             return false;
         }
+    }
+
+    public boolean doneProccesing() {
+        return targetMap.values().stream().allMatch(target -> target.getRunResult()==RunResult.FINISHED||target.getRunResult()==RunResult.SKIPPED);
     }
 
     //----------------------------------------------------------------------------------------

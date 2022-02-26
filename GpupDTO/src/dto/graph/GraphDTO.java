@@ -75,7 +75,7 @@ public class GraphDTO {
     }
 
     public int getTargetCount() {
-        return targetCount;
+        return independentCount + leafCount + middleCount + rootCount;
     }
 
     public void setTargetCount(int targetCount) {

@@ -306,7 +306,7 @@ public class NewEngine {
                 .filter(execution -> execution.isWorkerExist(workerName))
                 .collect(Collectors.toList()).forEach(e -> list.add(new LightWorkerExecution(e)));
         return list;
-    }
+
     public boolean isExecActive(String taskNameFromParameter) {
         return tasksList.get(taskNameFromParameter).getExecutionStatus()==ExecutionStatus.Active;
     }

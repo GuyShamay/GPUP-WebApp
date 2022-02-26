@@ -7,7 +7,7 @@ import worker.logic.target.TaskTarget;
 
 import java.util.Random;
 
-public class SimulationTask implements Task{
+public class SimulationTask implements Task {
 
     private final int processingTimeInMs;
     private final Boolean isRandomProcTime;
@@ -17,19 +17,20 @@ public class SimulationTask implements Task{
     private final Random random;
 
     public SimulationTask(SimulationConfigDTO details) {
-        processingTimeInMs=details.getProcessingTime();
-        isRandomProcTime=details.getIsRandom();
-        successProb=details.getSuccessProb();
-        successWithWarningsProb=details.getSuccessWithWarningsProb();
-        random=new Random();
+        processingTimeInMs = details.getProcessingTime();
+        isRandomProcTime = details.getIsRandom();
+        successProb = details.getSuccessProb();
+        successWithWarningsProb = details.getSuccessWithWarningsProb();
+        random = new Random();
     }
 
     public void run(TaskTarget target) throws InterruptedException {
 
+
         float LuckyNumber = (float) Math.random();
         String runningLogs = "";
         calcSingleTargetProcessingTimeInMs();
-        runningLogs +=target.getName() + ": Sleeping Time - " + sleepingTime + "\n";
+        runningLogs += target.getName() + ": Sleeping Time - " + sleepingTime + "\n";
 
         TargetStatus res = LuckyNumber < successProb ? TargetStatus.SUCCESS : TargetStatus.FAILURE;
 
@@ -38,12 +39,13 @@ public class SimulationTask implements Task{
             res = LuckyNumber < successWithWarningsProb ? TargetStatus.WARNING : TargetStatus.SUCCESS;
         }
 
-        runningLogs +=target.getName() + " going to sleep\n";
+        runningLogs += target.getName() + " going to sleep\n";
         Thread.sleep(sleepingTime);
-        runningLogs +=target.getName() + " woke up\n";
+        runningLogs += target.getName() + " woke up\n";
 
         target.setLogs(runningLogs);
         target.setStatus(res);
+        target.setProcessingTime(String.valueOf(sleepingTime));
     }
 
     private void calcSingleTargetProcessingTimeInMs() {
@@ -51,7 +53,7 @@ public class SimulationTask implements Task{
         if (isRandomProcTime) {
             res = random.nextInt(processingTimeInMs);
         } else {
-            res =  processingTimeInMs;
+            res = processingTimeInMs;
         }
         sleepingTime = res;
     }

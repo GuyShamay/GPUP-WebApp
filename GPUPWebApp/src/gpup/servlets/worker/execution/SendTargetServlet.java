@@ -55,6 +55,8 @@ public class SendTargetServlet extends HttpServlet {
                 target.setLogs(jsonObject.get("logs").getAsString());
             if(jsonObject.has("worker"))
                 target.setWorker(jsonObject.get("worker").getAsString());
+        if (jsonObject.has("processingTime"))
+            target.setProcessingTime(jsonObject.get("processingTime").getAsString());
             if(jsonObject.has("finishResult"))
                 target.setFinishResult(FinishResultDTO.valueOf(jsonObject.get("finishResult").getAsString()));
 
