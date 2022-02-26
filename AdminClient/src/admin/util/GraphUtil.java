@@ -75,7 +75,7 @@ public abstract class GraphUtil {
         return list;
     }
 
-    private static TargetDTO createTargetDTO(JsonObject jsonObject) {
+    public static TargetDTO createTargetDTO(JsonObject jsonObject) {
         TargetDTO targetDTO = new TargetDTO();
 
         targetDTO.setName(jsonObject.get("name").getAsString());
@@ -99,6 +99,9 @@ public abstract class GraphUtil {
         }
         targetDTO.setDependsOnList(getListIfExist(jsonObject, "dependsOnList"));
         targetDTO.setRequiredForList(getListIfExist(jsonObject, "requiredForList"));
+        targetDTO.setSkippedBecauseList(getListIfExist(jsonObject,"skippedBecauseList"));
+        targetDTO.setDependsOnToOpenList(getListIfExist(jsonObject,"dependsOnToOpenList"));
+
         return targetDTO;
     }
 

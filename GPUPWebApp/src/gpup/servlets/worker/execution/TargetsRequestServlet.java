@@ -30,7 +30,6 @@ public class TargetsRequestServlet extends HttpServlet {
         String username = SessionUtils.getUsername(request);
         Integer threadsCount = SessionUtils.getWorkerThreads(request);
         if (username != null || threadsCount != null) {
-
                 if (taskNameFromParameter == null || taskNameFromParameter.isEmpty()) {
                     response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
                 } else {

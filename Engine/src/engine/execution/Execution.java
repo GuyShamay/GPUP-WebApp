@@ -4,6 +4,7 @@ import dto.execution.config.ConfigDTO;
 import dto.execution.config.ExecutionConfigDTO;
 import dto.target.FinishedTargetDTO;
 import dto.target.NewExecutionTargetDTO;
+import dto.target.TargetDTO;
 import engine.graph.TargetGraph;
 import engine.progressdata.ProgressData;
 import engine.target.FinishResult;
@@ -307,5 +308,12 @@ public class Execution {
     public ExecutionStatus getExecutionStatus() {
         return status;
 
+    }
+
+    public TargetDTO getTargetDTORealTime(String targetName) {
+        Target t = taskGraph.getTargetMap().get(targetName);
+        TargetDTO res = new TargetDTO(t);
+        res.initRunningFields(t);
+        return res;
     }
 }
