@@ -216,7 +216,6 @@ public class TaskControlController implements Closeable {
         //runTaskAutoUpdate.set(false);
         //-----------------------------//
         controlCommand(DTOUtil.ExecutionControlDTO.Stop);
-
     }
 
     private void play() {

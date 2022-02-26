@@ -24,11 +24,10 @@ import java.util.List;
 import java.util.TimerTask;
 import java.util.function.Consumer;
 
-import static worker.client.util.Constants.TASK_NAME;
+import static worker.client.util.Constants.*;
 
 public class TargetsRequestRefresher extends TimerTask {
     private final Consumer<List<NewExecutionTargetDTO>> targetsConsumer;
-  //  private final Consumer<String> errorConsumer;
     private final BooleanProperty shouldUpdate;
     private final Worker worker;
 
@@ -40,37 +39,49 @@ public class TargetsRequestRefresher extends TimerTask {
 
     @Override
     public void run() {
-        if (!shouldUpdate.get()) {
-            return;
-        }
-
         if(worker.isRegisterAny()) {
-            worker.getWorkerExecutions().forEach(taskName->{
-                String finalUrl = HttpUrl
-                        .parse(Constants.TARGET_REQUEST)
-                        .newBuilder()
-                        .addQueryParameter(TASK_NAME, taskName)
-                        .build()
-                        .toString();
+            synchronized (worker) {
+                worker.getExecutionsMap().forEach((taskName, execution) -> {
+                    if (execution.getExecutionStatus().equals(WorkerExecutionStatus.Active)) {
+                        String finalUrl = HttpUrl
+                                .parse(Constants.TARGET_REQUEST)
+                                .newBuilder()
+                                .addQueryParameter(TASK_NAME, taskName)
+                                .build()
+                                .toString();
 
-                HttpClientUtil.runAsync(finalUrl, new Callback() {
-                    @Override
-                    public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                        //  Platform.runLater(() -> errorConsumer.accept("Error: failed request"));
-                    }
+                        HttpClientUtil.runAsync(finalUrl, new Callback() {
+                            @Override
+                            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                                //  Platform.runLater(() -> errorConsumer.accept("Error: failed request"));
+                            }
 
-                    @Override
-                    public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                        String responseBody = response.body().string();
-                        if(responseBody!=null && !responseBody.isEmpty()) {
-                            JsonArray jsonArray = JsonParser.parseString(responseBody).getAsJsonArray();
-                            List<NewExecutionTargetDTO> list = parseTargetsList(jsonArray);
-                            targetsConsumer.accept(list);
-                        }
+                            @Override
+                            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                                String responseBody = response.body().string();
+                                switch (response.code()){
+                                    case SC_EXEC_ON:
+                                        if (responseBody != null && !responseBody.isEmpty()) {
+                                            System.out.println("Worker: exec on");
+                                            JsonArray jsonArray = JsonParser.parseString(responseBody).getAsJsonArray();
+                                            List<NewExecutionTargetDTO> list = parseTargetsList(jsonArray);
+                                            targetsConsumer.accept(list);
+                                        }
+                                        break;
+                                    case SC_EXEC_PAUSED:
+                                        System.out.println("Worker: Admin Paused Exec");
+                                        break;
+                                    case SC_EXEC_STOPPED:
+                                        worker.unregisterWorkerExecution(taskName);
+                                        System.out.println("Worker: Admin Stopped Or Done Exec");
+                                        System.out.println(response.message());
+                                        break;
+                                }
+                            }
+                        });
                     }
                 });
-            });
-
+            }
         }
     }
 

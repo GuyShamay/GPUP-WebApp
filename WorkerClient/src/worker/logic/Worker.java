@@ -35,6 +35,7 @@ public class Worker {
     private final IntegerProperty credit;
     private final IntegerProperty busyThreads;
     private ExecutorService threadsExecutor;
+    private List<Future<?>> futures = new ArrayList<>();
     private Map<String, WorkerExecution> workerExecutions; // list of registered tasks
     private final List<TaskTarget> targets;
     private Map<WorkerExecution, List<TaskTarget>> targetsPerExec;
@@ -95,7 +96,6 @@ public class Worker {
         this.threadsCount = threadsCount;
         threadsExecutor = Executors.newFixedThreadPool(this.threadsCount);
         startRefresher();
-        // new Thread(() -> run()).start();
     }
 
     public boolean isRegisterAny() {
@@ -110,33 +110,6 @@ public class Worker {
 
     public List<String> getTasksListByName() {
         return new ArrayList<>(workerExecutions.keySet());
-    }
-
-    public void run() {
-        List<Future<?>> futures = new ArrayList<>();
-
-        while (isAlive) {
-
-            for (WorkerExecution execution : workerExecutions.values()) {
-                if (!targetsPerExec.get(execution).isEmpty()) {
-                    TaskTarget taskTarget = targetsPerExec.get(execution).remove(0);
-                    if (taskTarget.getStatus() == null) {
-                        taskTarget.setStatus(TargetStatus.InProcess);
-                        Runnable r = () -> {
-                            busyThreads.add(1);
-                            try {
-                                runTaskOnTarget(taskTarget, execution.getTask());
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                            busyThreads.subtract(1);
-                        };
-                        Future<?> f = threadsExecutor.submit(r);
-                        futures.add(f);
-                    }
-                }
-            }
-        }
     }
 
     public void runTaskOnTarget(TaskTarget target, Task task) throws InterruptedException {
@@ -172,14 +145,14 @@ public class Worker {
     private void acceptTargets(List<NewExecutionTargetDTO> newTargets) {
         newTargets.forEach(t -> {
             TaskTarget target = new TaskTarget(t);
-            WorkerExecution workerExecution = workerExecutions.get(t.getExecutionName());
-            target.setPayedPrice(workerExecution.getPrice());
-            target.setType(workerExecution.getType());
             target.setStatus(null);
-            // maybe add configDTO
-
+            WorkerExecution workerExecution;
             synchronized (this) {
+                workerExecution = workerExecutions.get(t.getExecutionName());
+                target.setPayedPrice(workerExecution.getPrice());
+                target.setType(workerExecution.getType());
                 targets.add(target);
+            }
                 target.setStatus(TargetStatus.InProcess);
                 Runnable r = () -> {
                     busyThreads.add(1);
@@ -191,8 +164,8 @@ public class Worker {
                     busyThreads.subtract(1);
                 };
                 Future<?> f = threadsExecutor.submit(r);
-            }
-            // targetsPerExec.get(workerExecution).add(target);
+                futures.add(f);
+
         });
     }
 
@@ -205,13 +178,29 @@ public class Worker {
     }
 
     public void shutdown() {
+
         isAlive = false;
         if (refresher != null && timer != null) {
             refresher.cancel();
             timer.cancel();
         }
+
+        waitAllThreadsToFinish();
         threadsExecutor.shutdownNow();
     }
+
+    private void waitAllThreadsToFinish() {
+        while(!AllThreadsDone(futures)){}
+    }
+
+    private boolean AllThreadsDone(List<Future<?>> futures) {
+        boolean allDone = true;
+        for (Future<?> future : futures) {
+            allDone &= future.isDone(); // check if future is done
+        }
+        return allDone;
+    }
+
 
     public WorkerExecutionStatus getWorkerExecutionStatus(String taskName) {
         return workerExecutions.get(taskName).getExecutionStatus();
@@ -225,10 +214,38 @@ public class Worker {
         workerExecutions.get(taskName).activate();
     }
 
+    public void setUnregisteredWorkerExecutionStatus(String taskName){
+        workerExecutions.get(taskName).setExecutionStatus(WorkerExecutionStatus.Unregistered);
+    }
+
     public void unregisterWorkerExecution(String taskName) {
-        workerExecutions.get(taskName).stop();
-        // remove from map
-        // send http req to server to unregiter
+        synchronized (this) {
+            setUnregisteredWorkerExecutionStatus(taskName);
+            workerExecutions.remove(taskName);
+            try {
+                unregisterTask(taskName);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void unregisterTask(String taskName) throws IOException {
+        List<String> oneTaskInListAsJson = new ArrayList<>();
+        oneTaskInListAsJson.add(taskName);
+        String taskAsJson = GSON_INST.toJson(oneTaskInListAsJson);
+        RequestBody body = RequestBody.create(taskAsJson, MediaType.parse("application/json"));
+        HttpClientUtil.runAsyncWithBody(UNREGISTER, body,new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                String s = response.body().string();
+            }
+        });
+
     }
 
     public ObservableList<WorkerExecution> getObservableWorkerExecutions() {
@@ -236,4 +253,11 @@ public class Worker {
     }
 
 
+    public Collection<WorkerExecution> getExecution() {
+        return workerExecutions.values();
+    }
+
+    public Map<String, WorkerExecution> getExecutionsMap() {
+        return workerExecutions;
+    }
 }
