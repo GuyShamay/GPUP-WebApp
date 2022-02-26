@@ -1,6 +1,7 @@
 package worker.logic.task;
 
 
+import dto.execution.config.CompilationConfigDTO;
 import dto.execution.config.ConfigDTO;
 import dto.execution.config.SimulationConfigDTO;
 import dto.target.FinishResultDTO;
@@ -43,18 +44,17 @@ public class WorkerExecution {
     }
 
     public void setExecutionDetails(ConfigDTO executionDetails) {
-
         this.executionDetails = executionDetails;
         initTask();
     }
 
     private void initTask() {
-        switch (this.type){
+        switch (this.type) {
             case Simulation:
-                task= new SimulationTask((SimulationConfigDTO) executionDetails);
+                task = new SimulationTask((SimulationConfigDTO) executionDetails);
                 break;
             case Compilation:
-                //  CompilationTask.run(target.getName(),)
+                task = new CompilationTask((CompilationConfigDTO) executionDetails);
                 break;
         }
     }
@@ -69,7 +69,7 @@ public class WorkerExecution {
 
     //NEEDED?
     public void stop() {
-       // this.executionStatus = WorkerExecutionStatus.Unregistered;
+        // this.executionStatus = WorkerExecutionStatus.Unregistered;
     }
 
     public WorkerExecutionStatus getExecutionStatus() {
@@ -133,6 +133,6 @@ public class WorkerExecution {
     }
 
     public void setExecutionStatus(WorkerExecutionStatus status) {
-        executionStatus=status;
+        executionStatus = status;
     }
 }

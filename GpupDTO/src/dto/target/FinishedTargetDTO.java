@@ -1,6 +1,9 @@
 package dto.target;
 
 import dto.util.DTOUtil;
+import org.omg.CORBA.PRIVATE_MEMBER;
+
+import java.time.Instant;
 
 public class FinishedTargetDTO {
 
@@ -10,14 +13,24 @@ public class FinishedTargetDTO {
     private String worker;
     private String processingTime;
     private FinishResultDTO finishResult;
+    private String startingTime;
 
-    public FinishedTargetDTO(String name, String executionName, String logs, String worker, FinishResultDTO finishResult, String processingTime) {
+    public String getStartingTime() {
+        return startingTime;
+    }
+
+    public void setStartingTime(String startingTime) {
+        this.startingTime = startingTime;
+    }
+
+    public FinishedTargetDTO(String name, String executionName, String logs, String worker, FinishResultDTO finishResult, String processingTime, String startingTime) {
         this.name = name;
         this.executionName = executionName;
         this.logs = logs;
         this.worker = worker;
         this.finishResult = finishResult;
         this.processingTime = processingTime;
+        this.startingTime = startingTime;
     }
 
     public FinishedTargetDTO() {

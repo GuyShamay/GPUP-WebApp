@@ -206,12 +206,26 @@ public class TaskControlController implements Closeable {
             isRunning.set(false);
             resumeButton.setVisible(false);
             runTaskAutoUpdate.set(false); // stop the refresher
-            //
-            // Ask from server the task results
-            //
+            Platform.runLater(() -> calculateResult(status));
         }
         // update progress:
         Platform.runLater(() -> progressBar.setProgress(task.getProgress()));
+    }
+
+    private void calculateResult(String status) {
+        labelSkipped.setText(String.valueOf(skippedCol.getItems().size()));
+        labelFailure.setText(String.valueOf(failureCol.getItems().size()));
+        labelWarnings.setText(String.valueOf(warningsCol.getItems().size()));
+        labelSuccess.setText(String.valueOf(successCol.getItems().size()));
+        if (status.equals("Stopped")) {
+            labelTaskStatus.setText("Task stopped by Admin");
+        } else {
+            if (skippedCol.getItems().size() == 0) {
+                labelTaskStatus.setText("Task finished completely");
+            } else {
+                labelTaskStatus.setText("Task didn't finished completely");
+            }
+        }
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -392,6 +406,10 @@ public class TaskControlController implements Closeable {
         if (runTaskRefresher != null && TasksTimer != null) {
             runTaskRefresher.cancel();
             TasksTimer.cancel();
+        }
+        if (outputAreaRefresher != null && outputAreaTimer != null) {
+            outputAreaRefresher.cancel();
+            outputAreaTimer.cancel();
         }
     }
 

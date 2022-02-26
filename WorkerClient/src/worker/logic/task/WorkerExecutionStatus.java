@@ -3,6 +3,7 @@ package worker.logic.task;
 public enum WorkerExecutionStatus {
     Active,
     Paused,
-    Stopped,
+    StoppedByAdmin,
+    Finished,
     Unregistered,
 }

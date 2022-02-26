@@ -27,8 +27,6 @@ public class TaskControlController {
     @FXML
     private Button unregisterButton;
     @FXML
-    private Button actionsButton;
-    @FXML
     private TableColumn<WorkerExecution, String> nameCol;
     @FXML
     private TableColumn<WorkerExecution, String> statusCol;
@@ -46,37 +44,38 @@ public class TaskControlController {
     private ControlPanelController controlPanelController;
     private String selectedTaskName;
     private Worker worker;
-    private final BooleanProperty actionsPressed;
+    private final BooleanProperty isSelected;
     private final BooleanProperty isSelectedPaused;
 
     public TaskControlController() {
-        actionsPressed = new SimpleBooleanProperty(false);
+        isSelected = new SimpleBooleanProperty(false);
         isSelectedPaused = new SimpleBooleanProperty(false);
     }
 
     @FXML
     public void initialize() {
-        actionsButton.disableProperty().bind(actionsPressed);
-        cancelButton.disableProperty().bind(actionsPressed.not());
-//        unregisterButton.disableProperty().bind(actionsPressed.not());
-//        resumeButton.visibleProperty().bind(isSelectedPaused.and(actionsPressed));
-//        pauseButton.visibleProperty().bind(isSelectedPaused.not().and(actionsPressed));
-        //unregisterButton.disableProperty().bind(actionsPressed.not());
-        resumeButton.visibleProperty().bind(isSelectedPaused);
-        pauseButton.visibleProperty().bind(isSelectedPaused.not());
-
+        resumeButton.visibleProperty().bind(isSelectedPaused.and(isSelected));
+        pauseButton.visibleProperty().bind(isSelectedPaused.not().and(isSelected));
+        unregisterButton.visibleProperty().bind(isSelected);
+        cancelButton.visibleProperty().bind(isSelected);
         tasksTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         tasksTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue == null) {
+                controlPanelController.resumeTasksControlRefresher();
                 selectedTaskName = null;
+                isSelected.set(false);
                 isSelectedPaused.set(false);
             } else {
                 controlPanelController.pauseTasksControlRefresher();
-
-                //
+                isSelected.set(true);
                 selectedTaskName = newValue.getName();
                 if (worker.getWorkerExecutionStatus(selectedTaskName).equals(WorkerExecutionStatus.Paused)) {
                     isSelectedPaused.set(true);
+                }
+                if (worker.getWorkerExecutionStatus(selectedTaskName).equals(WorkerExecutionStatus.StoppedByAdmin) ||
+                        worker.getWorkerExecutionStatus(selectedTaskName).equals(WorkerExecutionStatus.Finished)) {
+                    pauseButton.setDisable(true);
+                    resumeButton.setDisable(true);
                 }
             }
         });
@@ -96,17 +95,13 @@ public class TaskControlController {
         progressCol.setCellValueFactory(cellData -> new SimpleStringProperty(String.format("%d / 100", (int) (cellData.getValue().getProgress() * 100))));
     }
 
-    @FXML
-    void actionsButtonClicked(ActionEvent event) {
-        controlPanelController.updateMessage("", false);
-        actionsPressed.set(true);
-        // label -> please select task
-        controlPanelController.pauseTasksControlRefresher();
-    }
 
     @FXML
     void cancelButtonClicked(ActionEvent event) {
-        actionsPressed.set(false);
+        tasksTable.getSelectionModel().clearSelection();
+        controlPanelController.resumeTasksControlRefresher();
+        selectedTaskName = null;
+        isSelected.set(false);
     }
 
     @FXML
@@ -116,7 +111,6 @@ public class TaskControlController {
         }
         worker.pauseWorkerExecution(selectedTaskName);
         controlPanelController.resumeTasksControlRefresher();
-        actionsPressed.set(false);
     }
 
     @FXML
@@ -126,7 +120,6 @@ public class TaskControlController {
         }
         worker.resumeWorkerExecution(selectedTaskName);
         controlPanelController.resumeTasksControlRefresher();
-        actionsPressed.set(false);
     }
 
     @FXML
@@ -137,9 +130,8 @@ public class TaskControlController {
         }
         if (TaskUtil.confirmationAlert("Unregister Task", "Are you sure you want to unregister task: " + selectedTaskName + "?")) {
             worker.unregisterWorkerExecution(selectedTaskName);
-            controlPanelController.resumeTasksControlRefresher();
-            actionsPressed.set(false);
         }
+        controlPanelController.resumeTasksControlRefresher();
     }
 
     public void updateTaskTable(ObservableList<WorkerExecution> newItems) { // will be called from main controller->refresher: controlPanel->this
@@ -153,9 +145,5 @@ public class TaskControlController {
 
     public void setControlPanelController(ControlPanelController controller) {
         this.controlPanelController = controller;
-    }
-
-    public void setActions(boolean b) {
-        actionsPressed.set(b);
     }
 }

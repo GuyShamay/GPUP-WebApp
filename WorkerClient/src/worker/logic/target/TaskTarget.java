@@ -3,6 +3,8 @@ package worker.logic.target;
 import dto.target.NewExecutionTargetDTO;
 import worker.logic.task.ExecutionType;
 
+import java.time.Instant;
+
 public class TaskTarget {
     private String name;
     private String userData;
@@ -12,10 +14,12 @@ public class TaskTarget {
     private ExecutionType type;
     private TargetStatus status;
     private String processingTime;
+    private String startingTime;
 
     public TaskTarget() {
         payedPrice = null;
     }
+
     public TaskTarget(NewExecutionTargetDTO t) {
         this.name = t.getName();
         this.userData = t.getUserData();
@@ -85,5 +89,13 @@ public class TaskTarget {
 
     public void setStatus(TargetStatus status) {
         this.status = status;
+    }
+
+    public void setStartingTime(String start) {
+        startingTime = start;
+    }
+
+    public String getStartingTime() {
+        return startingTime;
     }
 }

@@ -135,7 +135,7 @@ public class UploadTaskServlet extends HttpServlet {
                     configDTO.setDestDir(config.get("destDir").getAsString());
                 }
                 if (config.has("srcDir")) {
-                    configDTO.setDestDir(config.get("srcDir").getAsString());
+                    configDTO.setSrcDir(config.get("srcDir").getAsString());
                 }
                 executionConfig.setConfigDTO(configDTO);
             } else if (executionConfig.getExecutionType().equals(DTOUtil.ExecutionTypeDTO.Simulation)) {

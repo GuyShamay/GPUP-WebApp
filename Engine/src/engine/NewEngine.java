@@ -89,7 +89,7 @@ public class NewEngine {
     private void addGraph(TargetGraph graph) {
         if (!graphsList.containsKey(graph.getName())) {
             graphsList.put(graph.getName(), graph);
-            staticNewExecution(graph);//////////////////////////////////////////////////////////////
+           staticNewExecution(graph);//////////////////////////////////////////////////////////////
         }
     }
 

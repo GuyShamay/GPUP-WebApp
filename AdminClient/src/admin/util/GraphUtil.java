@@ -88,15 +88,15 @@ public abstract class GraphUtil {
         if (jsonObject.has("finishResult")) {
             targetDTO.setFinishResult(FinishResultDTO.valueOf(jsonObject.get("finishResult").getAsString()));
         }
-        if (jsonObject.has("startRunningTime")) {
-            targetDTO.setStartRunningTime(Instant.parse(jsonObject.get("startRunningTime").getAsString()));
-        }
-        if (jsonObject.has("startWaitingTime")) {
-            targetDTO.setStartWaitingTime(Instant.parse(jsonObject.get("startWaitingTime").getAsString()));
-        }
-        if (jsonObject.has("taskRunDuration")) {
-            targetDTO.setTaskRunDuration(Duration.parse(jsonObject.get("taskRunDuration").getAsString()));
-        }
+//        if (jsonObject.has("startRunningTime")) {
+//            targetDTO.setStartRunningTime(Instant.parse(jsonObject.get("startRunningTime").getAsString()));
+//        }
+//        if (jsonObject.has("startWaitingTime")) {
+//            targetDTO.setStartWaitingTime(Instant.parse(jsonObject.get("startWaitingTime").getAsString()));
+//        }
+//        if (jsonObject.has("taskRunDuration")) {
+//            targetDTO.setTaskRunDuration(Duration.parse(jsonObject.get("taskRunDuration").getAsString()));
+//        }
         targetDTO.setDependsOnList(getListIfExist(jsonObject, "dependsOnList"));
         targetDTO.setRequiredForList(getListIfExist(jsonObject, "requiredForList"));
         targetDTO.setSkippedBecauseList(getListIfExist(jsonObject,"skippedBecauseList"));
