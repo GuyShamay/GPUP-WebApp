@@ -61,6 +61,7 @@ public class WorkerDashboardController implements Closeable {
     public void initialize() {
         submitRegisterButton.visibleProperty().bind(register);
         submitLabel.visibleProperty().bind(register);
+        registerButton.disableProperty().bind(tasksListController.isEmptyTableProperty());
     }
 
     public void setWorkerMainController(WorkerMainController workerMainController) {
@@ -71,8 +72,6 @@ public class WorkerDashboardController implements Closeable {
         usersListComponentController.startListRefresher();
         loadTasksListComponent();
         tasksListController.startTaskListRefresher();
-
-        // load tasks Screen...
     }
 
     private void loadTasksListComponent() {
@@ -162,7 +161,8 @@ public class WorkerDashboardController implements Closeable {
     @FXML
     void tasksScreenButtonClicked(ActionEvent event) {
         register.set(false);
-        // worker main controller -> switch to tasks screen
+        pauseRefreshers();
+        workerMainController.switchToControlPanel();
     }
 
     public String getUsername() {
@@ -177,5 +177,15 @@ public class WorkerDashboardController implements Closeable {
     public void close() throws IOException {
         usersListComponentController.close();
         tasksListController.close();
+    }
+
+    public void pauseRefreshers() {
+        tasksListController.pauseRefresher();
+        usersListComponentController.pauseRefresher();
+    }
+
+    public void resumeRefreshers() {
+        tasksListController.resumeRefresher();
+        usersListComponentController.resumeRefresher();
     }
 }

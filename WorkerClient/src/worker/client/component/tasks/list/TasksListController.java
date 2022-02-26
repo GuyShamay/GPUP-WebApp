@@ -2,6 +2,7 @@ package worker.client.component.tasks.list;
 
 import dto.execution.ExecutionDTO;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -47,12 +48,14 @@ public class TasksListController implements Closeable {
 
     private WorkerDashboardController workerDashboardController;
     private final BooleanProperty autoUpdate;
+    private final BooleanProperty isEmptyTable;
     private Timer timer;
     private TasksListRefresher tasksListRefresher;
     private String currentSelectedTaskName;
 
     public TasksListController() {
         autoUpdate = new SimpleBooleanProperty(true);
+        isEmptyTable = new SimpleBooleanProperty(true);
         currentSelectedTaskName = null;
     }
 
@@ -66,7 +69,12 @@ public class TasksListController implements Closeable {
                 currentSelectedTaskName = newValue.getName();
             }
         });
+        isEmptyTable.bind(Bindings.isEmpty(tasksTable.getItems()));
         tasksTableInitialize();
+    }
+
+    public BooleanProperty isEmptyTableProperty() {
+        return isEmptyTable;
     }
 
     private void tasksTableInitialize() {

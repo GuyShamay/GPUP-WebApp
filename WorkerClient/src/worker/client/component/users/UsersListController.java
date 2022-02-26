@@ -71,6 +71,14 @@ public class UsersListController implements Closeable {
         Platform.runLater(() -> errorMessageLabel.setText(s));
     }
 
+    public void resumeRefresher() {
+        autoUpdate.set(true);
+    }
+
+    public void pauseRefresher() {
+        autoUpdate.set(false);
+    }
+
     @Override
     public void close() {
         usersTable.getItems().clear();
