@@ -178,4 +178,8 @@ public class Target implements Cloneable {
     public String getNameAndWorker() {
         return name + " - " + "Test"; // NEED TO UPDATE: WORKER'S NAME
     }
+
+    public void addToJustOpenedList(Target target) {
+        justOpenedList.add(target);
+    }
 }

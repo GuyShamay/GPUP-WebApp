@@ -1,12 +1,10 @@
 package old.component.task;
 
 import engine.progressdata.ProgressData;
-import old.component.target.FinishResult;
 import engine.target.Result;
 import engine.target.RunResult;
-import old.component.target.Target;
+import old.component.target.oldTarget;
 import old.component.targetgraph.TargetGraph;
-import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.concurrent.Task;
 
@@ -31,7 +29,7 @@ public class RunTask extends Task<Boolean> {
     private boolean doneRunning;
     private ProgressData progressData;
     // private List<String> currRunTargets;
-    private Set<Target> doneTargets;
+    private Set<oldTarget> doneTargets;
 
     public RunTask(old.component.task.Task task) {
         this.task = task;
@@ -65,7 +63,7 @@ public class RunTask extends Task<Boolean> {
     }
 
     private void runTask() {
-        List<Target> waitingList = subTargetGraph.getAllWaitingTargets();
+        List<oldTarget> waitingList = subTargetGraph.getAllWaitingTargets();
         List<Future<?>> futures = new ArrayList<>();
         threadExecutor = Executors.newFixedThreadPool(task.getParallelism());
 
@@ -76,7 +74,7 @@ public class RunTask extends Task<Boolean> {
                     handlePause(futures, waitingList);
                     //Thread.sleep(1000);
                 }
-                Target currentTarget = waitingList.remove(0);
+                oldTarget currentTarget = waitingList.remove(0);
                 while (currentTarget.isLock()) {
                     Thread.yield();
                 }
@@ -118,7 +116,7 @@ public class RunTask extends Task<Boolean> {
         return runPaused;
     }
 
-    private void handlePause(List<Future<?>> futures, List<Target> waitingList) {
+    private void handlePause(List<Future<?>> futures, List<oldTarget> waitingList) {
         cancelAllFutures(futures);
         try {
             synchronized (condition) {
@@ -131,7 +129,7 @@ public class RunTask extends Task<Boolean> {
         }
     }
 
-    private void updateWaitingList(List<Target> waitingList) {
+    private void updateWaitingList(List<oldTarget> waitingList) {
         subTargetGraph.getTargetsMap().forEach(((s, target) -> {
             if (target.getRunResult().equals(RunResult.WAITING) && !waitingList.contains(target)) {
                 waitingList.add(target);
@@ -151,7 +149,7 @@ public class RunTask extends Task<Boolean> {
         return allDone;
     }
 
-    private void runTarget(List<Target> waitingList, Target currentTarget) throws InterruptedException {
+    private void runTarget(List<oldTarget> waitingList, oldTarget currentTarget) throws InterruptedException {
        /* subTargetGraph.lockSerialSetOf(currentTarget);
 
        // currentTarget.setStartRunningTime();
@@ -168,7 +166,7 @@ public class RunTask extends Task<Boolean> {
         subTargetGraph.unlockSerialSetOf(currentTarget);*/
     }
 
-    private void changeRunResult(Result from, Result to, Target target) {
+    private void changeRunResult(Result from, Result to, oldTarget target) {
        /* synchronized (changeRunResult) {
             if (from != to) {
                 if (to instanceof RunResult)
@@ -181,7 +179,7 @@ public class RunTask extends Task<Boolean> {
     }
 
 
-    private void updateGraphAfterTaskResult(List<Target> waitingList, Target currentTarget) {
+    private void updateGraphAfterTaskResult(List<oldTarget> waitingList, oldTarget currentTarget) {
        /* synchronized (changeRunResult) {
             currentTarget.setRunResult(RunResult.FINISHED);
             if (currentTarget.getFinishResult().equals(FinishResult.FAILURE)) {
@@ -195,20 +193,20 @@ public class RunTask extends Task<Boolean> {
         }*/
     }
 
-    private void updateProgressBar(Target target) {
+    private void updateProgressBar(oldTarget target) {
         doneTargets.add(target);
         updateProgress(doneTargets.size(), subTargetGraph.count());
     }
 
-    private void addSkippedToDoneSet(Target currentTarget) {
+    private void addSkippedToDoneSet(oldTarget currentTarget) {
         currentTarget.getSkippedList().forEach(target -> {
             updateProgressBar(target);
         });
     }
 
-    private void changeRunResultOfList(List<Target> list, Result from, Result to) {
+    private void changeRunResultOfList(List<oldTarget> list, Result from, Result to) {
         synchronized (changeRunResult) {
-            for (Target t : list) {
+            for (oldTarget t : list) {
                 changeRunResult(from, to, t);
             }
         }

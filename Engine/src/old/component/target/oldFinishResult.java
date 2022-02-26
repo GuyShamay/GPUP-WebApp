@@ -1,6 +1,6 @@
 package old.component.target;
 
-public enum FinishResult implements Result{
+public enum oldFinishResult implements Result{
     SUCCESS,
     WARNING,
     FAILURE

@@ -1,7 +1,7 @@
 package old.component.task.compile;
 
-import old.component.target.FinishResult;
-import old.component.target.Target;
+import old.component.target.oldFinishResult;
+import old.component.target.oldTarget;
 import old.component.task.Task;
 import old.component.task.config.CompileConfig;
 import javafx.application.Platform;
@@ -36,11 +36,11 @@ public class CompileTask implements Task {
     }
 
     @Override
-    public FinishResult run(String targetName, String userData) throws InterruptedException {
+    public oldFinishResult run(String targetName, String userData) throws InterruptedException {
         Instant start = Instant.now();
         Platform.runLater(() -> taskOutput.setValue("File " + targetName + " is about to compile\n"));
         setPathFromFQN(userData);
-        FinishResult result;
+        oldFinishResult result;
         int exitCode = -1;
         try {
             String[] command = {"javac", "-d", destDirectory, "-cp", srcDirectory, filePath};
@@ -62,10 +62,10 @@ public class CompileTask implements Task {
         Instant end = Instant.now();
         processingTime = Duration.between(start, end);
         if (exitCode == 0) {
-            result = FinishResult.SUCCESS;
+            result = oldFinishResult.SUCCESS;
             Platform.runLater(() -> taskOutput.setValue("File " + targetName + " Compiled in " + processingTime.toMillis() + "ms\n"));
         } else {
-            result = FinishResult.FAILURE;
+            result = oldFinishResult.FAILURE;
             Platform.runLater(() -> taskOutput.setValue("File " + targetName + " Failed to compile\n"));
         }
         return result;
@@ -86,7 +86,7 @@ public class CompileTask implements Task {
     }
 
     @Override
-    public void updateRelevantTargets(List<Target> targets) {
+    public void updateRelevantTargets(List<oldTarget> targets) {
 
     }
 

@@ -1,19 +1,19 @@
 package old.component.targetgraph;
 
-import old.component.target.Target;
+import old.component.target.oldTarget;
 import engine.target.TargetsRelationType;
 
 import java.util.List;
 import java.util.Map;
 
 public interface GraphActions {
-    void buildGraph(Map<String, Target> targets);
+    void buildGraph(Map<String, oldTarget> targets);
 
     int count();
 
-    void addEdge(String source, Target destination);
+    void addEdge(String source, oldTarget destination);
 
-    void addTarget(Target target);
+    void addTarget(oldTarget target);
 
     boolean isDependOn(String s, String d);
 

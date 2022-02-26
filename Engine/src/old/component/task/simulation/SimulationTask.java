@@ -1,8 +1,8 @@
 package old.component.task.simulation;
 
 
-import old.component.target.FinishResult;
-import old.component.target.Target;
+import old.component.target.oldFinishResult;
+import old.component.target.oldTarget;
 import old.component.task.Task;
 import old.component.task.config.SimulationConfig;
 import javafx.application.Platform;
@@ -18,7 +18,7 @@ public class SimulationTask implements Task {
     private final float successWithWarningsProb;
     private long sleepingTime;
     private final Random random;
-    private List<Target> targets;
+    private List<oldTarget> targets;
     private int parallelism;
     private SimpleStringProperty taskOutput;
 
@@ -41,17 +41,17 @@ public class SimulationTask implements Task {
 
     }
 
-    public FinishResult run(String targetName, String userData) throws InterruptedException {
+    public oldFinishResult run(String targetName, String userData) throws InterruptedException {
         float LuckyNumber = (float) Math.random();
         calcSingleTargetProcessingTimeInMs();
         Platform.runLater(() -> {
             taskOutput.setValue(targetName + ": Sleeping Time - " + sleepingTime + "\n");
         });
-        FinishResult res = LuckyNumber < successProb ? FinishResult.SUCCESS : FinishResult.FAILURE;
+        oldFinishResult res = LuckyNumber < successProb ? oldFinishResult.SUCCESS : oldFinishResult.FAILURE;
 
-        if (res == FinishResult.SUCCESS) {
+        if (res == oldFinishResult.SUCCESS) {
             LuckyNumber = (float) Math.random();
-            res = LuckyNumber < successWithWarningsProb ? FinishResult.WARNING : FinishResult.SUCCESS;
+            res = LuckyNumber < successWithWarningsProb ? oldFinishResult.WARNING : oldFinishResult.SUCCESS;
         }
         Platform.runLater(() -> {
             taskOutput.setValue(targetName + " going to sleep\n");
@@ -83,7 +83,7 @@ public class SimulationTask implements Task {
     }
 
     @Override
-    public void updateRelevantTargets(List<Target> targets) {
+    public void updateRelevantTargets(List<oldTarget> targets) {
         this.targets = targets;
     }
 

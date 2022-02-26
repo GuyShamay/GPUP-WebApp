@@ -18,6 +18,9 @@ public class FinishedTargetDTO {
         this.finishResult = finishResult;
     }
 
+    public FinishedTargetDTO() {
+    }
+
     public String getName() {
         return name;
     }

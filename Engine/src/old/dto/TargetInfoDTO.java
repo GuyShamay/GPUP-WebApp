@@ -1,6 +1,6 @@
 package old.dto;
 
-import old.component.target.Target;
+import old.component.target.oldTarget;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 
@@ -25,7 +25,7 @@ public class TargetInfoDTO {
     private final String runResult;
 
 
-    public TargetInfoDTO(Target target) {
+    public TargetInfoDTO(oldTarget target) {
         data = new SimpleStringProperty(target.getUserData());
         name = new SimpleStringProperty(target.getName());
         type = new SimpleStringProperty(target.getType().toString());
@@ -42,7 +42,7 @@ public class TargetInfoDTO {
 
     }
 
-    private List<String> convertToStringsList(List<Target> list) {
+    private List<String> convertToStringsList(List<oldTarget> list) {
         final List<String> res = new ArrayList<>();
         list.forEach(target -> res.add(target.getName()));
         return res;

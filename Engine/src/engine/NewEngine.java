@@ -5,11 +5,13 @@ import dto.execution.RunExecutionDTO;
 import dto.execution.WorkerExecutionDTO;
 import dto.execution.config.*;
 import dto.graph.GraphDTO;
+import dto.target.FinishedTargetDTO;
 import dto.target.NewExecutionTargetDTO;
 import dto.target.TargetDTO;
 import dto.util.DTOUtil;
 import engine.exceptions.GraphExistException;
 import engine.execution.Execution;
+import engine.execution.ExecutionStatus;
 import engine.execution.ExecutionType;
 import engine.graph.TargetGraph;
 import engine.jaxb.generated.v3.GPUPDescriptor;
@@ -34,6 +36,23 @@ public class NewEngine {
         userManager = new UserManager();
         File workDir = new File("C:\\gpup-working-dir");
         workDir.mkdir();
+    }
+
+    private void staticNewExecution(TargetGraph graph) {
+        Execution e = new Execution();
+        e.setName("staticTask");
+        e.setCreatingUser("noam");
+        e.setStatus(ExecutionStatus.New);
+        e.setPrice(5);
+        e.setType(ExecutionType.Simulation);
+        e.setTaskGraph(graph.clone());
+        SimulationConfigDTO c = new SimulationConfigDTO();
+        c.setIsRandom(false);
+        c.setProcessingTime(1500);
+        c.setSuccessProb(0.7f);
+        c.setSuccessWithWarningsProb(0.1f);
+        e.setExecutionDetails(c);
+        tasksList.put("staticTask", e);
     }
 
     public UserManager getUserManager() {
@@ -67,6 +86,7 @@ public class NewEngine {
     private void addGraph(TargetGraph graph) {
         if (!graphsList.containsKey(graph.getName())) {
             graphsList.put(graph.getName(), graph);
+            staticNewExecution(graph);//////////////////////////////////////////////////////////////
         }
     }
 
@@ -261,5 +281,9 @@ public class NewEngine {
 
     public List<NewExecutionTargetDTO> requestExecutionTargets(String taskName, int threadsCount) {
         return  tasksList.get(taskName).requestNewTargets(threadsCount);
+    }
+
+    public void setFinishedTarget(FinishedTargetDTO finishedTarget) {
+        tasksList.get(finishedTarget.getExecutionName()).setFinishedTarget(finishedTarget);
     }
 }

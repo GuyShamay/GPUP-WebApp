@@ -1,7 +1,7 @@
 package dto.target;
 
 public enum FinishResultDTO {
-    Success,
+    SUCCESS,
     WARNING,
     FAILURE
 }
