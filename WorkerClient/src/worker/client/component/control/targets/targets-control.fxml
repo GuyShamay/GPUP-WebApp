@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="worker.client.component.control.targets.TargetsControlController">
+   <children>
+      <GridPane layoutX="77.0" layoutY="113.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <columnConstraints>
+            <ColumnConstraints hgrow="NEVER" minWidth="10.0" prefWidth="10.0" />
+            <ColumnConstraints hgrow="NEVER" minWidth="30.0" prefWidth="30.0" />
+          <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" />
+          <ColumnConstraints hgrow="NEVER" minWidth="10.0" prefWidth="10.0" />
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints minHeight="10.0" prefHeight="10.0" vgrow="NEVER" />
+          <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="NEVER" />
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+            <RowConstraints minHeight="10.0" prefHeight="10.0" vgrow="NEVER" />
+        </rowConstraints>
+         <children>
+            <TableView fx:id="targetsTable" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="1" GridPane.rowSpan="2">
+              <columns>
+                <TableColumn fx:id="nameCol" maxWidth="110.0" minWidth="110.0" prefWidth="110.0" text="Name" />
+                <TableColumn fx:id="taskCol" maxWidth="200.0" minWidth="100.0" prefWidth="200.0" text="Task" />
+                  <TableColumn fx:id="taskTypeCol" maxWidth="80.0" minWidth="80.0" text="Task Type" />
+                  <TableColumn fx:id="statusCol" maxWidth="100.0" minWidth="100.0" prefWidth="100.0" text="Status" />
+                  <TableColumn fx:id="payedPriceCol" maxWidth="100.0" minWidth="100.0" prefWidth="100.0" text="Payed Price" />
+                  <TableColumn fx:id="logsCol" maxWidth="1.7976931348623157E308" minWidth="200.0" prefWidth="200.0" text="Logs" />
+              </columns>
+               <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+               </columnResizePolicy>
+            </TableView>
+         </children>
+      </GridPane>
+   </children>
+</AnchorPane>

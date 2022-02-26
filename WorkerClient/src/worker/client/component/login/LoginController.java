@@ -85,7 +85,7 @@ public class LoginController {
                     Platform.runLater(() -> {
                         workerMainController.setUsername(userName);
                         workerMainController.setWorkerThreads(threadsCount);
-                        workerMainController.switchToDashboard();
+                        workerMainController.switchToDashboardFirstTime();
                     });
                 }
             }

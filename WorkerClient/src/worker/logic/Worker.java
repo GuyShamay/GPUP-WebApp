@@ -29,6 +29,7 @@ import worker.logic.target.TargetStatus;
 import worker.logic.target.TaskTarget;
 import worker.logic.task.TargetsRequestRefresher;
 import worker.logic.task.WorkerExecution;
+import worker.logic.task.WorkerExecutionStatus;
 
 import java.io.IOException;
 import java.security.Key;
@@ -45,25 +46,28 @@ public class Worker {
     private String name;
     private int threadsCount;
     private final IntegerProperty credit;
-    private int busyThreads;
+    private final IntegerProperty busyThreads;
     private ExecutorService threadsExecutor;
     private Map<String, WorkerExecution> workerExecutions; // list of registered tasks
     private final List<TaskTarget> targets;
-
     private TargetsRequestRefresher refresher;
+    private Timer timer;
     private boolean isAlive;
 
     //private List<ExecutionDTO> listedExecutions;
     // for task table in tasks screen:
     //              http req from engine: getExecutionByWorker
-
     public Worker() {
         credit = new SimpleIntegerProperty(0);
-        busyThreads = 0;
+        busyThreads = new SimpleIntegerProperty(0);
         threadsCount = 0;
         targets = new ArrayList<>();
         workerExecutions = new HashMap<>();
         isAlive = true;
+    }
+
+    public IntegerProperty busyThreadsProperty() {
+        return busyThreads;
     }
 
     public ObservableList<TaskTarget> getTargets() {
@@ -90,12 +94,8 @@ public class Worker {
         this.name = name;
     }
 
-    public int getFreeThreads() {
-        return threadsCount - busyThreads;
-    }
-
     public int getBusyThreads() {
-        return busyThreads;
+        return busyThreads.get();
     }
 
     public int getThreadsCount() {
@@ -127,21 +127,21 @@ public class Worker {
 
         while (isAlive) {
             workerExecutions.forEach((s, exec) -> {
-                        targets.forEach(taskTarget -> {
-                            if (taskTarget.getStatus() == null && taskTarget.getExecutionName().equals(exec.getName())) {
-                                taskTarget.setStatus(TargetStatus.InProcess);
-                                Runnable r = () -> {
-                                    try {
-                                        runTarget(taskTarget);
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-                                };
-                                Future<?> f = threadsExecutor.submit(r);
-                                futures.add(f);
+                targets.forEach(taskTarget -> {
+                    if (taskTarget.getStatus() == null && taskTarget.getExecutionName().equals(exec.getName())) {
+                        taskTarget.setStatus(TargetStatus.InProcess);
+                        Runnable r = () -> {
+                            try {
+                                runTarget(taskTarget);
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
-                        });
-                    });
+                        };
+                        Future<?> f = threadsExecutor.submit(r);
+                        futures.add(f);
+                    }
+                });
+            });
 //
 //                TaskTarget target = targets.stream()
 //                        .filter(taskTarget -> taskTarget.getStatus() == null && taskTarget.getExecutionName().equals(exec.getName()))
@@ -184,8 +184,9 @@ public class Worker {
     }
 
     public void startRefresher() {
-        refresher = new TargetsRequestRefresher(this,this::acceptTargets);
-        new Timer().schedule(refresher, TARGET_REQ_REFRESH_RATE, TARGET_REQ_REFRESH_RATE);
+        refresher = new TargetsRequestRefresher(this, this::acceptTargets);
+        timer = new Timer();
+        timer.schedule(refresher, TARGET_REQ_REFRESH_RATE, TARGET_REQ_REFRESH_RATE);
     }
 
     private void acceptTargets(List<NewExecutionTargetDTO> newTargets) {
@@ -201,7 +202,7 @@ public class Worker {
     }
 
     public boolean isAvailableThreads() {
-      return (threadsCount - ((ThreadPoolExecutor)threadsExecutor).getActiveCount() > 0);
+        return (threadsCount - ((ThreadPoolExecutor) threadsExecutor).getActiveCount() > 0);
     }
 
     public Set<String> getWorkerExecutions() {
@@ -209,8 +210,35 @@ public class Worker {
     }
 
     public void shutdown() {
-        isAlive=false;
-        //Somethingbefore?
+        isAlive = false;
+        if (refresher != null && timer != null) {
+            refresher.cancel();
+            timer.cancel();
+        }
         threadsExecutor.shutdownNow();
     }
+
+    public WorkerExecutionStatus getWorkerExecutionStatus(String taskName) {
+        return workerExecutions.get(taskName).getExecutionStatus();
+    }
+
+    public void pauseWorkerExecution(String taskName) {
+        workerExecutions.get(taskName).pause();
+    }
+
+    public void resumeWorkerExecution(String taskName) {
+        workerExecutions.get(taskName).activate();
+    }
+
+    public void unregisterWorkerExecution(String taskName) {
+        workerExecutions.get(taskName).stop();
+        // remove from map
+        // send http req to server to unregiter
+    }
+
+    public ObservableList<WorkerExecution> getObservableWorkerExecutions() {
+        return FXCollections.observableArrayList(workerExecutions.values());
+    }
+
+
 }

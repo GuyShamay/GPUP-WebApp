@@ -17,7 +17,7 @@ import static worker.client.util.Constants.TARGET_REQ_REFRESH_RATE;
 public class WorkerExecution {
     private String name;
     private int workersCount;
-    private int progress;
+    private double progress;
     private int credit;
     private int price;
     private int doneTargets;
@@ -99,11 +99,11 @@ public class WorkerExecution {
         this.workersCount = workersCount;
     }
 
-    public int getProgress() {
+    public double getProgress() {
         return progress;
     }
 
-    public void setProgress(int progress) {
+    public void setProgress(double progress) {
         this.progress = progress;
     }
 

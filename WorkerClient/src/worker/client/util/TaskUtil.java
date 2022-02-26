@@ -9,6 +9,8 @@ import dto.execution.config.SimulationConfigDTO;
 import dto.graph.GraphDTO;
 import dto.target.*;
 import dto.util.DTOUtil;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import worker.logic.task.ExecutionType;
 import worker.logic.task.WorkerExecution;
 
@@ -161,7 +163,7 @@ public abstract class TaskUtil {
             execution.setWorkersCount(jsonObject.get("workersCount").getAsInt());
         }
         if (jsonObject.has("progress")) {
-            execution.setProgress(jsonObject.get("progress").getAsInt());
+            execution.setProgress(jsonObject.get("progress").getAsDouble());
         }
         if (jsonObject.has("price")) {
             execution.setPrice(jsonObject.get("price").getAsInt());
@@ -190,5 +192,17 @@ public abstract class TaskUtil {
             return newTarget;
         }
         return null;
+    }
+
+    public static boolean confirmationAlert(String header, String msg) {
+        final boolean[] result = new boolean[1];
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, msg, ButtonType.YES, ButtonType.NO);
+        alert.setTitle(header);
+        alert.showAndWait().ifPresent(type -> {
+            if (type == ButtonType.YES) {
+                result[0] = true;
+            }
+        });
+        return result[0];
     }
 }

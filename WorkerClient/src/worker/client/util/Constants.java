@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 
 public class Constants {
     public final static int REFRESH_RATE = 2000;
+    public final static int CONTROL_REFRESH_RATE = 2000;
     public final static int TARGET_REQ_REFRESH_RATE = 500;
 
     // FXML Locations:
@@ -11,6 +12,9 @@ public class Constants {
     public final static String LOGIN_PAGE_FXML_RESOURCE_LOCATION = "../login/login.fxml";
     public final static String WORKER_DASHBOARD_FXML_RESOURCE_LOCATION = "../dashboard/worker-dashboard.fxml";
     public final static String TASKS_LIST_FXML_RESOURCE_LOCATION = "../tasks/list/tasks-list.fxml";
+    public final static String TASK_CONTROL_FXML_RESOURCE_LOCATION = "tasks/task-control.fxml";
+    public final static String TARGETS_CONTROL_FXML_RESOURCE_LOCATION = "targets/targets-control.fxml";
+    public final static String CONTROL_PANEL_FXML_RESOURCE_LOCATION = "../control/control-panel.fxml";
     // Gson:
     public final static Gson GSON_INST = new Gson();
 

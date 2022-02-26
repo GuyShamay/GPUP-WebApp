@@ -2,10 +2,9 @@ package worker.client.component.main;
 
 import com.google.gson.JsonObject;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -14,6 +13,9 @@ import javafx.scene.layout.AnchorPane;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
+import worker.client.component.control.ControlPanelController;
+import worker.client.component.control.targets.TargetsControlRefresher;
+import worker.client.component.control.tasks.TasksControlRefresher;
 import worker.client.component.dashboard.WorkerDashboardController;
 import worker.client.component.login.LoginController;
 import worker.client.util.Constants;
@@ -25,8 +27,8 @@ import worker.logic.task.WorkerExecution;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
 
 import static worker.client.util.Constants.*;
 
@@ -43,19 +45,24 @@ public class WorkerMainController implements Closeable {
 
     private Worker worker;
     private StringProperty username;
-    private IntegerProperty threads;
 
     private Parent dashboardComponent;
+    private Parent controlPanelComponent;
     private WorkerDashboardController workerDashboardController;
+    private ControlPanelController controlPanelController;
     private AnchorPane loginComponent;
     private LoginController loginController;
+    private TasksControlRefresher tasksControlRefresher;
+    private TargetsControlRefresher targetsControlRefresher;
+
+    private Timer targetsTimer;
+    private Timer tasksTimer;
     private boolean isLoggedIn;
 
     // ------------------------------------------------------------------------------------------------------------
     // Controller:
     public WorkerMainController() {
         username = new SimpleStringProperty();
-        threads = new SimpleIntegerProperty();
         worker = new Worker();
     }
 
@@ -65,11 +72,21 @@ public class WorkerMainController implements Closeable {
         totalCreditLabel.textProperty().bind(worker.creditProperty().asString());
         loadLoginPageAndSet();
         loadDashboard();
+        loadControlPanel();
     }
 
     @Override
     public void close() throws IOException {
         workerDashboardController.close();
+        if (targetsControlRefresher != null && targetsTimer != null) {
+            targetsControlRefresher.cancel();
+            targetsTimer.cancel();
+        }
+        if (tasksControlRefresher != null && tasksTimer != null) {
+            tasksControlRefresher.cancel();
+            tasksTimer.cancel();
+        }
+
         if (isLoggedIn) {
             unregisterTasks();
             worker.shutdown();
@@ -86,9 +103,6 @@ public class WorkerMainController implements Closeable {
         AnchorPane.setRightAnchor(pane, 1.0);
     }
 
-    public IntegerProperty threadsProperty() {
-        return threads;
-    }
 
     private void unregisterTasks() throws IOException {
         List<String> tasksList = worker.getTasksListByName();
@@ -100,6 +114,7 @@ public class WorkerMainController implements Closeable {
 
     // ------------------------------------------------------------------------------------------------------------
     // Login Component:
+
     private void logout() throws IOException {
         String finalUrl = HttpUrl
                 .parse(Constants.LOGOUT)
@@ -125,17 +140,16 @@ public class WorkerMainController implements Closeable {
         }
     }
 
-    public void switchToDashboard() {
+    public void switchToDashboardFirstTime() {
         setMainPanelTo(dashboardComponent);
         workerDashboardController.setActive();
         isLoggedIn = true;
 
     }
 
-
     // ------------------------------------------------------------------------------------------------------------
-
     // Dashboard Component:
+
     private void loadDashboard() {
         usernameLabel.textProperty().bind(Bindings.concat("Hello ", username, "!"));
         URL loginPageUrl = getClass().getResource(WORKER_DASHBOARD_FXML_RESOURCE_LOCATION);
@@ -150,11 +164,7 @@ public class WorkerMainController implements Closeable {
         }
     }
 
-
     // ------------------------------------------------------------------------------------------------------------
-    public void setThreads(int threads) {
-        this.threads.set(threads);
-    }
 
     public void setUsername(String userName) {
         username.set(userName);
@@ -173,14 +183,6 @@ public class WorkerMainController implements Closeable {
         return worker.isRegisterAny();
     }
 
-    public int getWorkerFreeThreads() {
-        return worker.getFreeThreads();
-    }
-
-    public int getWorkerThreads() {
-        return worker.getThreadsCount();
-    }
-
     public void updateMessage(String msg, boolean isError) {
         messageLabel.setText(msg);
         if (isError) {
@@ -193,5 +195,70 @@ public class WorkerMainController implements Closeable {
     public void registerForTask(JsonObject jsonObject) {
         WorkerExecution execution = TaskUtil.parseToWorkerExecution(jsonObject);
         this.worker.addExecution(execution);
+    }
+
+    // ------------------------------------------------------------------------------------------------------------
+    // Control Panel
+
+    private void loadControlPanel() {
+        URL url = getClass().getResource(CONTROL_PANEL_FXML_RESOURCE_LOCATION);
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader();
+            fxmlLoader.setLocation(url);
+            controlPanelComponent = fxmlLoader.load();
+            controlPanelController = fxmlLoader.getController();
+            controlPanelController.setWorkerForAll(this.worker);
+            controlPanelController.setWorkerMainController(this);
+            controlPanelController.setBusyThreadsProperty(worker.busyThreadsProperty());
+            startTasksControlRefresher();
+            startTargetsControlRefresher();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void startTargetsControlRefresher() {
+        targetsControlRefresher = new TargetsControlRefresher(this::updateTargetsTable);
+        targetsTimer = new Timer();
+        targetsTimer.schedule(targetsControlRefresher, CONTROL_REFRESH_RATE, CONTROL_REFRESH_RATE);
+    }
+
+    private void startTasksControlRefresher() {
+        tasksControlRefresher = new TasksControlRefresher(this::updateTasksTable);
+        tasksTimer = new Timer();
+        tasksTimer.schedule(tasksControlRefresher, CONTROL_REFRESH_RATE, CONTROL_REFRESH_RATE);
+    }
+
+    public void pauseTasksControlRefresher() {
+        tasksControlRefresher.pause();
+        // pause lightWorkerExecutionRefresher
+        // boolean property -> false
+    }
+
+    public void resumeTasksControlRefresher() {
+        tasksControlRefresher.resume();
+        // resume lightWorkerExecutionRefresher
+        // boolean property -> true
+    }
+
+
+    public void switchToControlPanel() {
+        updateMessage("", false);
+        setMainPanelTo(controlPanelComponent);
+        controlPanelController.resumeTasksControlRefresher();
+    }
+
+    public void switchBackToDashboard() {
+        updateMessage("", false);
+        setMainPanelTo(dashboardComponent);
+        workerDashboardController.resumeRefreshers();
+    }
+
+    public void updateTargetsTable(Void v) {
+        controlPanelController.updateTargetsTable(worker.getTargets());
+    }
+
+    public void updateTasksTable(Void v) {
+        controlPanelController.updateTasksTable(worker.getObservableWorkerExecutions());
     }
 }
