@@ -11,10 +11,12 @@ import engine.target.Result;
 import engine.target.RunResult;
 import engine.target.Target;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.io.*;
+import java.lang.invoke.ConstantCallSite;
+import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.*;
 
 public class Execution {
     private TargetGraph taskGraph;
@@ -29,6 +31,7 @@ public class Execution {
     private ConfigDTO executionDetails;
     private ProgressData progressData;
     private List<String> logs;
+    public final static String WORKING_DIR = "C:\\gpup-working-dir\\";
 
     // Run Execution Managing Fields: (Not pass by DTO)
     private boolean isStarted; // PLAY -> to true
@@ -166,7 +169,7 @@ public class Execution {
     }
 
     public boolean isAllowedToPlay() {
-        return status == ExecutionStatus.Paused|status == ExecutionStatus.New;
+        return status == ExecutionStatus.Paused | status == ExecutionStatus.New;
     }
 
     private void initialize() {
@@ -184,35 +187,25 @@ public class Execution {
 
     public void stop() {
         status = ExecutionStatus.Stopped;
-        System.out.println("stopped");
     }
 
     public void pause() {
         status = ExecutionStatus.Paused;
-        System.out.println("paused");
     }
 
     public void resume() {
         status = ExecutionStatus.Active;
-        System.out.println("resumed");
     }
 
     public void play() {
         initialize(); // circuit ? throw runTimeException -> catch in servlet
-        System.out.println("on");
 
-       while (status.equals(ExecutionStatus.Active) || status.equals(ExecutionStatus.Paused)) {
-            if(status.equals(ExecutionStatus.Paused)) {
-               // update message: PAUSED
-                System.out.println("pauseeeeee");
-           }
-            if(taskGraph.doneProccesing()){
+        while (status.equals(ExecutionStatus.Active) || status.equals(ExecutionStatus.Paused)) {
+            if (doneTargets.size() == taskGraph.getCount()) {
                 status = ExecutionStatus.Done;
-                System.out.println("need to done");
             }
-       }
-
-        System.out.println("doneeeeeeeee");
+        }
+        Thread.currentThread().interrupt();
     }
 
     public synchronized List<NewExecutionTargetDTO> requestNewTargets(int threadsCount) {
@@ -250,12 +243,44 @@ public class Execution {
         Target target = taskGraph.getTargetMap().get(finishedTarget.getName());
         target.setFinishResult(FinishResult.valueOf(finishedTarget.getFinishResult().toString()));
         changeRunResult(RunResult.INPROCESS, target.getFinishResult(), target);
+        target.setStartRunningTime(Instant.parse(finishedTarget.getStartingTime()));
+        target.setTaskRunDuration(Duration.between(target.getStartRunningTime(), Instant.now()));
 
-        // save to file
+        try {
+            writeTLogsToFile(finishedTarget);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         addFinishedTargetLog(finishedTarget.getLogs());
         updateProgressBar(target);
 
         updateGraphAfterTaskResult(waitingList, target);
+    }
+
+    private void writeTLogsToFile(FinishedTargetDTO finishedTarget) throws IOException {
+        createTaskDirectoryIfNeeded();
+        String path = WORKING_DIR + this.name;
+        String fileName = finishedTarget.getName() + ".log";
+        try (Writer out = new BufferedWriter(
+                new OutputStreamWriter(
+                        new FileOutputStream(path + "\\" + fileName)))) {
+
+            // write to file:
+            out.write(finishedTarget.getLogs());
+        }
+    }
+
+
+    public void createTaskDirectoryIfNeeded() {
+        String path = WORKING_DIR + this.name;
+
+        File taskDirectory = new File(path);
+        if (!taskDirectory.exists()) {
+            if (!taskDirectory.mkdir()) {
+                throw new RuntimeException("Failure with creating the Task's Directory");
+            }
+        }
     }
 
     private synchronized void addFinishedTargetLog(String log) {
@@ -304,6 +329,7 @@ public class Execution {
         }
         return logs.subList(version, logs.size());
     }
+
     public ExecutionStatus getExecutionStatus() {
         return status;
 

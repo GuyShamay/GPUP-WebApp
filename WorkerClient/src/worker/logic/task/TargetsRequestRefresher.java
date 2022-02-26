@@ -34,12 +34,12 @@ public class TargetsRequestRefresher extends TimerTask {
     public TargetsRequestRefresher(Worker worker, Consumer<List<NewExecutionTargetDTO>> targetsConsumer) {
         this.targetsConsumer = targetsConsumer;
         shouldUpdate = new SimpleBooleanProperty(true);
-        this.worker=worker;
+        this.worker = worker;
     }
 
     @Override
     public void run() {
-        if(worker.isRegisterAny()) {
+        if (worker.isRegisterAny()) {
             synchronized (worker) {
                 worker.getExecutionsMap().forEach((taskName, execution) -> {
                     if (execution.getExecutionStatus().equals(WorkerExecutionStatus.Active)) {
@@ -59,22 +59,20 @@ public class TargetsRequestRefresher extends TimerTask {
                             @Override
                             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                                 String responseBody = response.body().string();
-                                switch (response.code()){
+                                switch (response.code()) {
                                     case SC_EXEC_ON:
                                         if (responseBody != null && !responseBody.isEmpty()) {
-                                            System.out.println("Worker: exec on");
                                             JsonArray jsonArray = JsonParser.parseString(responseBody).getAsJsonArray();
                                             List<NewExecutionTargetDTO> list = parseTargetsList(jsonArray);
                                             targetsConsumer.accept(list);
                                         }
                                         break;
-                                    case SC_EXEC_PAUSED:
-                                        System.out.println("Worker: Admin Paused Exec");
-                                        break;
                                     case SC_EXEC_STOPPED:
-                                        worker.unregisterWorkerExecution(taskName);
-                                        System.out.println("Worker: Admin Stopped Or Done Exec");
-                                        System.out.println(response.message());
+                                        worker.updateWorkerExecutionStatus(taskName, WorkerExecutionStatus.StoppedByAdmin);
+                                        break;
+                                    case SC_EXEC_DONE:
+                                        worker.updateWorkerExecutionStatus(taskName, WorkerExecutionStatus.Finished);
+
                                         break;
                                 }
                             }

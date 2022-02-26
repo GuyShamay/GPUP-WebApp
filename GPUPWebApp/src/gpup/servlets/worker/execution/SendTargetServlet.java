@@ -15,11 +15,14 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.Instant;
 import java.util.Scanner;
+
+import static gpup.constants.Constants.GSON_INST;
 
 @WebServlet(name = "SendTargetServlet", urlPatterns = {"/worker/send-target"})
 public class SendTargetServlet extends HttpServlet {
-    
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         processRequest(req, resp);
@@ -46,19 +49,21 @@ public class SendTargetServlet extends HttpServlet {
 
     private FinishedTargetDTO parseBodyToFinishedTarget(String reqBodyAsString) {
         FinishedTargetDTO target = new FinishedTargetDTO();
-            JsonObject jsonObject = JsonParser.parseString(reqBodyAsString).getAsJsonObject();
-            if(jsonObject.has("name"))
-                target.setName(jsonObject.get("name").getAsString());
-            if(jsonObject.has("executionName"))
-                target.setExecutionName(jsonObject.get("executionName").getAsString());
-            if(jsonObject.has("logs"))
-                target.setLogs(jsonObject.get("logs").getAsString());
-            if(jsonObject.has("worker"))
-                target.setWorker(jsonObject.get("worker").getAsString());
+        JsonObject jsonObject = JsonParser.parseString(reqBodyAsString).getAsJsonObject();
+        if (jsonObject.has("name"))
+            target.setName(jsonObject.get("name").getAsString());
+        if (jsonObject.has("executionName"))
+            target.setExecutionName(jsonObject.get("executionName").getAsString());
+        if (jsonObject.has("logs"))
+            target.setLogs(jsonObject.get("logs").getAsString());
+        if (jsonObject.has("worker"))
+            target.setWorker(jsonObject.get("worker").getAsString());
         if (jsonObject.has("processingTime"))
             target.setProcessingTime(jsonObject.get("processingTime").getAsString());
-            if(jsonObject.has("finishResult"))
-                target.setFinishResult(FinishResultDTO.valueOf(jsonObject.get("finishResult").getAsString()));
+        if (jsonObject.has("finishResult"))
+            target.setFinishResult(FinishResultDTO.valueOf(jsonObject.get("finishResult").getAsString()));
+        if (jsonObject.has("startingTime"))
+            target.setStartingTime(jsonObject.get("startingTime").getAsString());
 
         return target;
     }

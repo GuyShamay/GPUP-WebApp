@@ -1,4 +1,4 @@
-package gpup.servlets.client;
+package gpup.servlets.admin.execution;
 
 import dto.execution.RunExecutionDTO;
 import engine.NewEngine;

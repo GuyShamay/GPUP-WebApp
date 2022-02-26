@@ -68,7 +68,6 @@ public class WorkerMainController implements Closeable {
     @FXML
     public void initialize() {
         isLoggedIn = false;
-        totalCreditLabel.textProperty().bind(worker.creditProperty().asString());
         loadLoginPageAndSet();
         loadDashboard();
         loadControlPanel();
@@ -180,6 +179,9 @@ public class WorkerMainController implements Closeable {
 
     public void setWorkerThreads(Integer value) {
         worker.initThreadsExecutor(value);
+        totalCreditLabel.textProperty().bind(worker.totalCreditProperty().asString());
+        controlPanelController.setBusyThreadsProperty(worker.busyThreadsProperty());
+
     }
 
     public boolean isRegisterAny() {
@@ -212,7 +214,6 @@ public class WorkerMainController implements Closeable {
             controlPanelController = fxmlLoader.getController();
             controlPanelController.setWorkerForAll(this.worker);
             controlPanelController.setWorkerMainController(this);
-            controlPanelController.setBusyThreadsProperty(worker.busyThreadsProperty());
             startTasksControlRefresher();
             startTargetsControlRefresher();
         } catch (IOException e) {
@@ -235,17 +236,12 @@ public class WorkerMainController implements Closeable {
     public void pauseTasksControlRefresher() {
         tasksControlRefresher.pause();
         worker.pauseLightRefresher();
-        // pause lightWorkerExecutionRefresher
-        // boolean property -> false
     }
 
     public void resumeTasksControlRefresher() {
         tasksControlRefresher.resume();
         worker.resumeLightRefresher();
-        // resume lightWorkerExecutionRefresher
-        // boolean property -> true
     }
-
 
     public void switchToControlPanel() {
         updateMessage("", false);

@@ -12,7 +12,6 @@ import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
 import worker.client.component.control.targets.TargetsControlController;
 import worker.client.component.control.tasks.TaskControlController;
 import worker.client.component.main.WorkerMainController;
@@ -28,9 +27,7 @@ import static worker.client.util.Constants.TASK_CONTROL_FXML_RESOURCE_LOCATION;
 
 public class ControlPanelController {
     @FXML
-    private BorderPane mainBorderPain;
-    @FXML
-    private Button backButton;
+    private AnchorPane mainPanel;
     @FXML
     private Button tasksButton;
     @FXML
@@ -62,7 +59,7 @@ public class ControlPanelController {
         targetsButton.disableProperty().bind(tasksPressed.not());
         loadTasks();
         loadTargets();
-        setMainBorderPainTo(taskControlComponent);
+        setMainPanelTo(taskControlComponent);
     }
 
     private void loadTasks() {
@@ -91,8 +88,13 @@ public class ControlPanelController {
         }
     }
 
-    private void setMainBorderPainTo(Parent parent) {
-        mainBorderPain.setCenter(parent);
+    private void setMainPanelTo(Parent pane) {
+        mainPanel.getChildren().clear();
+        mainPanel.getChildren().add(pane);
+        AnchorPane.setBottomAnchor(pane, 1.0);
+        AnchorPane.setTopAnchor(pane, 1.0);
+        AnchorPane.setLeftAnchor(pane, 1.0);
+        AnchorPane.setRightAnchor(pane, 1.0);
     }
 
     @FXML
@@ -105,8 +107,7 @@ public class ControlPanelController {
     @FXML
     void targetsButtonClicked(ActionEvent event) {
         updateMessage("", false);
-        taskControlController.setActions(false);
-        setMainBorderPainTo(targetsControlComponent);
+        setMainPanelTo(targetsControlComponent);
         workerMainController.pauseTasksControlRefresher();
         // resume targets ??
         tasksPressed.set(false);
@@ -115,7 +116,7 @@ public class ControlPanelController {
     @FXML
     void tasksButtonClicked(ActionEvent event) {
         updateMessage("", false);
-        setMainBorderPainTo(taskControlComponent);
+        setMainPanelTo(taskControlComponent);
         workerMainController.resumeTasksControlRefresher();
         // pause targets ??
         tasksPressed.set(true);

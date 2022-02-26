@@ -39,29 +39,14 @@ public class WorkerDashboardController implements Closeable {
     @FXML
     private Button registerButton;
     @FXML
-    private Button submitRegisterButton;
-    @FXML
-    private Button tasksScreenButton;
+    private Button clearSelectionButton;
     @FXML
     private Label submitLabel;
-
     @FXML
     public UsersListController usersListComponentController;
 
     private WorkerMainController workerMainController;
     private TasksListController tasksListController;
-    private ScrollPane tasksListComponent;
-    private final BooleanProperty register;
-
-    public WorkerDashboardController() {
-        register = new SimpleBooleanProperty(false);
-    }
-
-    @FXML
-    public void initialize() {
-        submitRegisterButton.visibleProperty().bind(register);
-        submitLabel.visibleProperty().bind(register);
-    }
 
     public void setWorkerMainController(WorkerMainController workerMainController) {
         this.workerMainController = workerMainController;
@@ -70,8 +55,10 @@ public class WorkerDashboardController implements Closeable {
     public void setActive() {
         usersListComponentController.startListRefresher();
         loadTasksListComponent();
+        registerButton.visibleProperty().bind(tasksListController.getIsSelected());
+        submitLabel.visibleProperty().bind(tasksListController.getIsSelected().not());
+        clearSelectionButton.visibleProperty().bind(tasksListController.getIsSelected());
         tasksListController.startTaskListRefresher();
-        registerButton.disableProperty().bind(tasksListController.isEmptyTableProperty());
     }
 
     private void loadTasksListComponent() {
@@ -79,7 +66,7 @@ public class WorkerDashboardController implements Closeable {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader();
             fxmlLoader.setLocation(taskSListURL);
-            tasksListComponent = fxmlLoader.load();
+            ScrollPane tasksListComponent = fxmlLoader.load();
             tasksListController = fxmlLoader.getController();
             tasksListController.setWorkerDashboardController(this);
             setMainPanelTo(tasksListComponent);
@@ -98,20 +85,21 @@ public class WorkerDashboardController implements Closeable {
     }
 
     @FXML
-    void registerButtonClicked(ActionEvent event) {
-        tasksListController.pauseRefresher();
-        register.set(true);
+    void clearSelectionButtonClicked(ActionEvent event) {
+        tasksListController.clearSelection();
+        tasksListController.resumeRefresher();
     }
 
     @FXML
-    void submitRegisterButtonClicked(ActionEvent event) {
+    void registerButtonClicked(ActionEvent event) {
         if (tasksListController.getSelectedTaskName() != null) {
             registerForTask();
-            tasksListController.resumeRefresher();
-            register.set(false);
+            tasksListController.getIsSelected().set(false);
         } else {
             updateMessage("Please select a task", true);
         }
+        tasksListController.resumeRefresher();
+
     }
 
     private void registerForTask() {
@@ -159,8 +147,8 @@ public class WorkerDashboardController implements Closeable {
     }
 
     @FXML
-    void tasksScreenButtonClicked(ActionEvent event) {
-        register.set(false);
+    void controlPanelButtonClicked(ActionEvent event) {
+        tasksListController.getIsSelected().set(false);
         pauseRefreshers();
         workerMainController.switchToControlPanel();
     }

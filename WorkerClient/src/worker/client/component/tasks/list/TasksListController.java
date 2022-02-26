@@ -6,6 +6,7 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -48,14 +49,14 @@ public class TasksListController implements Closeable {
 
     private WorkerDashboardController workerDashboardController;
     private final BooleanProperty autoUpdate;
-    private final BooleanProperty isEmptyTable;
+    private final BooleanProperty isSelected;
     private Timer timer;
     private TasksListRefresher tasksListRefresher;
     private String currentSelectedTaskName;
 
     public TasksListController() {
+        isSelected = new SimpleBooleanProperty(false);
         autoUpdate = new SimpleBooleanProperty(true);
-        isEmptyTable = new SimpleBooleanProperty(true);
         currentSelectedTaskName = null;
     }
 
@@ -64,18 +65,18 @@ public class TasksListController implements Closeable {
         tasksTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         tasksTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue == null) {
+                resumeRefresher();
                 currentSelectedTaskName = null;
+                isSelected.set(false);
             } else {
+                pauseRefresher();
+                isSelected.set(true);
                 currentSelectedTaskName = newValue.getName();
             }
         });
-        isEmptyTable.bind(Bindings.isEmpty(tasksTable.getItems()));
         tasksTableInitialize();
     }
 
-    public BooleanProperty isEmptyTableProperty() {
-        return isEmptyTable;
-    }
 
     private void tasksTableInitialize() {
         taskNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
@@ -139,5 +140,15 @@ public class TasksListController implements Closeable {
 
     public ExecutionDTO getSelectedTask() {
         return tasksTable.getSelectionModel().getSelectedItem();
+    }
+
+    public BooleanProperty getIsSelected() {
+        return isSelected;
+    }
+
+    public void clearSelection() {
+        isSelected.set(false);
+        tasksTable.getSelectionModel().clearSelection();
+        currentSelectedTaskName = null;
     }
 }

@@ -5,7 +5,6 @@ import engine.jaxb.generated.v3.*;
 import engine.serialset.SerialSet;
 import engine.target.Target;
 import engine.target.TargetType;
-import old.exception.ElementExistException;
 
 
 import java.util.*;
@@ -123,7 +122,7 @@ public abstract class GPUPParser {
                 Target target = createTarget(gt);
                 targets.put(target.getName(), target);
             } else {
-                throw new ElementExistException("Target", gt.getName());
+                throw new RuntimeException(gt.getName() + " Exist");
             }
         }
         // update the dependencies of each target:

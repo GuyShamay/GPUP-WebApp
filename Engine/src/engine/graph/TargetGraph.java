@@ -4,7 +4,6 @@ import dto.execution.config.ExecutionConfigDTO;
 import dto.target.TargetDTO;
 import engine.progressdata.ProgressData;
 import engine.target.*;
-import old.component.target.oldFinishResult;
 
 import java.util.*;
 

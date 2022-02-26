@@ -5,6 +5,8 @@ import dto.target.FinishResultDTO;
 import worker.logic.target.TargetStatus;
 import worker.logic.target.TaskTarget;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Random;
 
 public class SimulationTask implements Task {
@@ -26,11 +28,13 @@ public class SimulationTask implements Task {
 
     public void run(TaskTarget target) throws InterruptedException {
 
-
+        Instant start, end;
+        start = Instant.now();
+        target.setStartingTime(start.toString());
         float LuckyNumber = (float) Math.random();
         String runningLogs = "";
         calcSingleTargetProcessingTimeInMs();
-        runningLogs += target.getName() + ": Sleeping Time - " + sleepingTime + "\n";
+        runningLogs += target.getName() + ": Sleeping Time - " + sleepingTime + " ms\n";
 
         TargetStatus res = LuckyNumber < successProb ? TargetStatus.SUCCESS : TargetStatus.FAILURE;
 
@@ -38,14 +42,16 @@ public class SimulationTask implements Task {
             LuckyNumber = (float) Math.random();
             res = LuckyNumber < successWithWarningsProb ? TargetStatus.WARNING : TargetStatus.SUCCESS;
         }
-
-        runningLogs += target.getName() + " going to sleep\n";
+        runningLogs += target.getName() + " going to sleep...\n";
         Thread.sleep(sleepingTime);
-        runningLogs += target.getName() + " woke up\n";
+        end = Instant.now();
+
+        runningLogs += target.getName() + " woke up!\n";
+        target.setProcessingTime(String.valueOf(Duration.between(start, end).toMillis()));
+        runningLogs += "Actual Processing time: " + target.getProcessingTime() + " ms\n";
 
         target.setLogs(runningLogs);
         target.setStatus(res);
-        target.setProcessingTime(String.valueOf(sleepingTime));
     }
 
     private void calcSingleTargetProcessingTimeInMs() {
