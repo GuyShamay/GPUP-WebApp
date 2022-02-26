@@ -6,16 +6,16 @@ import dto.target.FinishedTargetDTO;
 import dto.target.NewExecutionTargetDTO;
 import dto.target.TargetDTO;
 import engine.graph.TargetGraph;
+import engine.graph.TargetGraphUtil;
 import engine.progressdata.ProgressData;
 import engine.target.FinishResult;
 import engine.target.Result;
 import engine.target.RunResult;
 import engine.target.Target;
+import old.component.target.oldFinishResult;
+import old.component.target.oldTarget;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Execution {
     private TargetGraph taskGraph;
@@ -315,5 +315,38 @@ public class Execution {
         TargetDTO res = new TargetDTO(t);
         res.initRunningFields(t);
         return res;
+    }
+
+    public void createTaskGraphIncremental(TargetGraph baseTaskGraph) {
+        List<String> targets = new ArrayList<>();
+        for (Target t : baseTaskGraph.getTargetMap().values()) {
+            if (t.getFinishResult() == FinishResult.FAILURE || t.getFinishResult() == null) {
+                targets.add(t.getName());
+            }
+        }
+
+            this.taskGraph = new TargetGraph(baseTaskGraph.getName(), baseTaskGraph.getCreatingUsername());
+            Map<String, List<Target>> dependsOn = new HashMap<>();
+            Map<String, Target> targetMap = new HashMap<>();
+
+            targets.forEach(targetName -> {
+                dependsOn.put(targetName, new LinkedList<>());
+                targetMap.put(targetName, baseTaskGraph.getTargetMap().get(targetName));
+            });
+
+            taskGraph.setDependsOnList(dependsOn);
+            taskGraph.setTargetMap(targetMap);
+
+            targetMap.values().forEach(target -> {
+                target.getDependsOnList().forEach(adj -> {
+                    if (targets.contains(adj.getName())) taskGraph.addEdge(target.getName(), adj);
+                });
+            });
+        }
+
+    public void prepareGraphIncremental() {
+        fromScratchReset();
+        TargetGraphUtil.updateTargetsType(taskGraph.getTargetMap());
+        updateLeavesAndIndependentsToWaiting();
     }
 }
