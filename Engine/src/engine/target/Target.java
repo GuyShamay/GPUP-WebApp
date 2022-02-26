@@ -182,4 +182,25 @@ public class Target implements Cloneable {
     public void addToJustOpenedList(Target target) {
         justOpenedList.add(target);
     }
+
+    public List<String> getDependsOnToOpenList() {
+        final List<String> res = new ArrayList<>();
+        dependsOnList.forEach(target -> {
+            if(target.getFinishResult()==null)
+                res.add(target.name);
+        });
+
+        return res;
+    }
+
+    public List<String> getSkippedBecauseList() {
+        final List<String> res = new ArrayList<>();
+        dependsOnList.forEach(target -> {
+            if(target.getFinishResult()==FinishResult.FAILURE)
+                res.add(target.name);
+        });
+
+        return res;
+    }
+
 }

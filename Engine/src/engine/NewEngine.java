@@ -323,4 +323,12 @@ public class NewEngine {
         return tasksList.get(taskNameFromParameter).getExecutionStatus()==ExecutionStatus.Done;
 
     }
+
+    public TargetDTO getTargetDTORealTime(String taskName, String targetName) {
+        return tasksList.get(taskName).getTargetDTORealTime(targetName);
+    }
+
+    public boolean isTaskInSystem(String taskNameFromParam) {
+        return tasksList.containsKey(taskNameFromParam);
+    }
 }
