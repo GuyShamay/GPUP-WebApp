@@ -30,6 +30,7 @@ public class Execution {
     private final List<String> workers;
     private ConfigDTO executionDetails;
     private ProgressData progressData;
+    private List<String> logs;
 
     // Run Execution Managing Fields: (Not pass by DTO)
     private boolean pause; // RESUME -> to false, PAUSE -> to true
@@ -46,7 +47,8 @@ public class Execution {
         workers = new ArrayList<>();
         play = false;
         pause = false;
-        doneTargets=new HashSet<>();
+        doneTargets = new HashSet<>();
+        logs = new ArrayList<>();
     }
 
 
@@ -154,9 +156,9 @@ public class Execution {
         }
     }
 
-    public void checkValidIncremental() {
+    public boolean checkValidIncremental() {
         // if incremental chosen, and all targets are finished -> from scratch
-        taskGraph.checkValidIncremental();
+        return taskGraph.checkValidIncremental();
     }
 
     public ProgressData getProgressData() {
@@ -234,7 +236,7 @@ public class Execution {
             for (int i = 0; i < totalToSend; i++) {
                 Target currentTarget = waitingList.remove(0);
                 changeRunResult(RunResult.WAITING, RunResult.INPROCESS, currentTarget);
-                NewExecutionTargetDTO t = new NewExecutionTargetDTO(currentTarget,this.name);
+                NewExecutionTargetDTO t = new NewExecutionTargetDTO(currentTarget, this.name);
                 list.add(t);
             }
             return list;
@@ -253,25 +255,30 @@ public class Execution {
     }
 
     public void setFinishedTarget(FinishedTargetDTO finishedTarget) {
-       Target target = taskGraph.getTargetMap().get(finishedTarget.getName());
-       target.setFinishResult(FinishResult.valueOf(finishedTarget.getFinishResult().toString()));
-       changeRunResult(RunResult.INPROCESS, target.getFinishResult(),target);
-        updateProgressBar(target);
+        Target target = taskGraph.getTargetMap().get(finishedTarget.getName());
+        target.setFinishResult(FinishResult.valueOf(finishedTarget.getFinishResult().toString()));
+        changeRunResult(RunResult.INPROCESS, target.getFinishResult(), target);
 
-       /////DO SOMETHING WITH LOGS
-        updateGraphAfterTaskResult(waitingList,target);
+        // save to file
+        addFinishedTargetLog(finishedTarget.getLogs());
+        updateProgressBar(target);
+        updateGraphAfterTaskResult(waitingList, target);
+    }
+
+    private synchronized void addFinishedTargetLog(String log) {
+        this.logs.add(log);
     }
 
     private synchronized void updateGraphAfterTaskResult(List<Target> waitingList, Target currentTarget) {
-            currentTarget.setRunResult(RunResult.FINISHED);
-            if (currentTarget.getFinishResult().equals(FinishResult.FAILURE)) {
-                taskGraph.dfsTravelToUpdateSkippedList(currentTarget);
-                addSkippedToDoneSet(currentTarget);
-                changeRunResultOfList(currentTarget.getSkippedList(), RunResult.FROZEN, RunResult.SKIPPED);
-                taskGraph.updateTargetAdjAfterFinishWithFailure(currentTarget);
-            } else {
-                taskGraph.updateTargetAdjAfterFinishWithoutFailure(progressData, waitingList, currentTarget);
-            }
+        currentTarget.setRunResult(RunResult.FINISHED);
+        if (currentTarget.getFinishResult().equals(FinishResult.FAILURE)) {
+            taskGraph.dfsTravelToUpdateSkippedList(currentTarget);
+            addSkippedToDoneSet(currentTarget);
+            changeRunResultOfList(currentTarget.getSkippedList(), RunResult.FROZEN, RunResult.SKIPPED);
+            taskGraph.updateTargetAdjAfterFinishWithFailure(currentTarget);
+        } else {
+            taskGraph.updateTargetAdjAfterFinishWithoutFailure(progressData, waitingList, currentTarget);
+        }
     }
 
     private synchronized void changeRunResultOfList(List<Target> skippedList, RunResult from, RunResult to) {
@@ -286,12 +293,22 @@ public class Execution {
         });
     }
 
-    private void updateProgressBar(Target target) {
+    private synchronized void updateProgressBar(Target target) {
         int sizeBefore = doneTargets.size();
         doneTargets.add(target);
-        if(sizeBefore < doneTargets.size())
+        if (sizeBefore < doneTargets.size())
             incrementProgress();
     }
 
 
+    public int getLogsVersions() {
+        return logs.size();
+    }
+
+    public synchronized List<String> getLogsEntries(int version) {
+        if (version < 0 || version > logs.size()) {
+            version = 0;
+        }
+        return logs.subList(version, logs.size());
+    }
 }

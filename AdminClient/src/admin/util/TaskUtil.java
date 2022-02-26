@@ -81,6 +81,9 @@ public class TaskUtil {
             if (jsonObject.has("warnings")) {
                 runExecution.setWarnings(parseToList(jsonObject.get("warnings").getAsJsonArray()));
             }
+            if (jsonObject.has("workers")) {
+                runExecution.setWorkers(jsonObject.get("workers").getAsInt());
+            }
             return runExecution;
         }
         return null;

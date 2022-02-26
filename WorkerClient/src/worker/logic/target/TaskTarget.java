@@ -11,15 +11,24 @@ public class TaskTarget {
     private Integer payedPrice;
     private ExecutionType type;
     private TargetStatus status;
+    private String processingTime;
 
     public TaskTarget() {
         payedPrice = null;
     }
-
     public TaskTarget(NewExecutionTargetDTO t) {
         this.name = t.getName();
         this.userData = t.getUserData();
         this.executionName = t.getExecutionName();
+        processingTime = null;
+    }
+
+    public String getProcessingTime() {
+        return processingTime;
+    }
+
+    public void setProcessingTime(String processingTime) {
+        this.processingTime = processingTime;
     }
 
     public String getUserData() {

@@ -4,11 +4,14 @@ import admin.component.main.AdminMainController;
 import admin.util.Constants;
 import admin.util.HttpClientUtil;
 import dto.execution.ExecutionDTO;
+import dto.execution.LogsWithVersion;
 import dto.execution.RunExecutionDTO;
 import dto.util.DTOUtil;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -24,6 +27,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Timer;
+import java.util.stream.Collectors;
 
 import static admin.util.Constants.REFRESH_RATE;
 import static admin.util.Constants.TASK;
@@ -82,8 +86,20 @@ public class TaskControlController implements Closeable {
     private TextArea textAreaOutput;
     @FXML
     private Label labelPickedType1;
+    @FXML
+    private Label taskNameLabel;
+    @FXML
+    private Label graphNameLabel;
+    @FXML
+    private Label workersLabel;
+    @FXML
+    private Label ilmrLabel;
 
-    private Timer timer;
+    private Timer TasksTimer;
+    private Timer outputAreaTimer;
+    private OutputAreaRefresher outputAreaRefresher;
+    private IntegerProperty outputAreaVersion;
+
     private ExecutionDTO currentTask;
     private AdminMainController adminMainController;
     private RunTaskRefresher runTaskRefresher;
@@ -96,6 +112,7 @@ public class TaskControlController implements Closeable {
         runTaskAutoUpdate = new SimpleBooleanProperty(true);
         isRunning = new SimpleBooleanProperty(false);
         isEnded = new SimpleBooleanProperty(false);
+        outputAreaVersion = new SimpleIntegerProperty(0);
     }
 
     @FXML
@@ -113,13 +130,42 @@ public class TaskControlController implements Closeable {
 
     public void setCurrentTask(ExecutionDTO currentTask) {
         this.currentTask = currentTask;
-
+        taskNameLabel.setText(currentTask.getName());
+        labelTotal.setText(String.valueOf(currentTask.getGraphDTO().getTargetCount()));
+        graphNameLabel.setText(currentTask.getGraphDTO().getName());
+        ilmrLabel.setText(String.format("%d, %d, %d, %d",
+                currentTask.getGraphDTO().getIndependentCount(),
+                currentTask.getGraphDTO().getLeafCount(),
+                currentTask.getGraphDTO().getMiddleCount(),
+                currentTask.getGraphDTO().getRootCount()));
     }
 
     private void startRunTaskRefresher() {
         runTaskRefresher = new RunTaskRefresher(currentTask.getName(), runTaskAutoUpdate, this::updateTask, s -> updateTaskControlMsgLabel(s, false));
-        timer = new Timer();
-        timer.schedule(runTaskRefresher, REFRESH_RATE, REFRESH_RATE);
+        TasksTimer = new Timer();
+        TasksTimer.schedule(runTaskRefresher, REFRESH_RATE, REFRESH_RATE);
+    }
+
+    public void startOutputRefresher() {
+        outputAreaRefresher = new OutputAreaRefresher(currentTask.getName(), outputAreaVersion, this::updateOutputArea);
+        outputAreaTimer = new Timer();
+        outputAreaTimer.schedule(outputAreaRefresher, REFRESH_RATE, REFRESH_RATE);
+    }
+
+    private void updateOutputArea(LogsWithVersion logsWithVersion) {
+        if (logsWithVersion.getVersion() != outputAreaVersion.get()) {
+            String deltaChatLines = logsWithVersion
+                    .getEntries()
+                    .stream()
+                    .map(singleLog -> String.format("%s\n---------------------------\n", singleLog)).collect(Collectors.joining());
+
+            Platform.runLater(() -> {
+                outputAreaVersion.set(logsWithVersion.getVersion());
+                textAreaOutput.appendText(deltaChatLines);
+                textAreaOutput.selectPositionCaret(textAreaOutput.getLength());
+                textAreaOutput.deselect();
+            });
+        }
     }
 
     private void updateTaskControlMsgLabel(String s, boolean isError) {
@@ -136,7 +182,7 @@ public class TaskControlController implements Closeable {
     private void updateTask(RunExecutionDTO task) {
         System.out.println("update task");
         // update lists views
-        clearAll();
+        clearListViews();
         frozenCol.setItems(task.getFrozen());
         waitingCol.setItems(task.getWaiting());
         inProcessCol.setItems(task.getInProcess());
@@ -145,9 +191,8 @@ public class TaskControlController implements Closeable {
         warningsCol.setItems(task.getWarnings());
         failureCol.setItems(task.getFailure());
         // update status:
+        workersLabel.setText(String.valueOf(task.getWorkers()));
         String status = task.getStatus();
-        System.out.println(status);
-        //DEBUG:
         updateTaskControlMsgLabel(status, false);
         if (Objects.equals(status, "Stopped") || Objects.equals(status, "Done")) {
             isEnded.set(true);
@@ -158,16 +203,6 @@ public class TaskControlController implements Closeable {
         }
         // update progress:
         Platform.runLater(() -> progressBar.setProgress(task.getProgress()));
-    }
-
-    private void clearAll() {
-        frozenCol.getItems().clear();
-        waitingCol.getItems().clear();
-        inProcessCol.getItems().clear();
-        skippedCol.getItems().clear();
-        successCol.getItems().clear();
-       warningsCol.getItems().clear();
-       failureCol.getItems().clear();
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -194,7 +229,6 @@ public class TaskControlController implements Closeable {
     void pauseButtonClicked(ActionEvent event) {
         isRunning.set(false);
         resumeButton.setVisible(true);
-        //runTaskAutoUpdate.set(false);
         //-----------------------------//
         controlCommand(DTOUtil.ExecutionControlDTO.Pause);
     }
@@ -213,7 +247,6 @@ public class TaskControlController implements Closeable {
         isRunning.set(false);
         isEnded.set(true);
         resumeButton.setVisible(false);
-        //runTaskAutoUpdate.set(false);
         //-----------------------------//
         controlCommand(DTOUtil.ExecutionControlDTO.Stop);
 
@@ -244,6 +277,7 @@ public class TaskControlController implements Closeable {
                         isRunning.set(true);
                         playButton.setDisable(true);
                         startRunTaskRefresher();
+                        startOutputRefresher();
                     });
                 }
             }
@@ -280,9 +314,9 @@ public class TaskControlController implements Closeable {
     @Override
     public void close() {
         clearListViews();
-        if (runTaskRefresher != null && timer != null) {
+        if (runTaskRefresher != null && TasksTimer != null) {
             runTaskRefresher.cancel();
-            timer.cancel();
+            TasksTimer.cancel();
         }
     }
 

@@ -72,7 +72,6 @@ public class WorkerDashboardController implements Closeable {
         loadTasksListComponent();
         tasksListController.startTaskListRefresher();
         registerButton.disableProperty().bind(tasksListController.isEmptyTableProperty());
-
     }
 
     private void loadTasksListComponent() {

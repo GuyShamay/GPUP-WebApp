@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 
 public class Constants {
     public final static int REFRESH_RATE = 2000;
-    public final static int CONTROL_REFRESH_RATE = 2000;
+    public final static int CONTROL_REFRESH_RATE = 1000;
     public final static int TARGET_REQ_REFRESH_RATE = 500;
 
     // FXML Locations:
@@ -36,5 +36,6 @@ public class Constants {
     public static final String UNREGISTER = FULL_SERVER_PATH + WORKER + "/unregister";
     public static final String TARGET_REQUEST = FULL_SERVER_PATH + WORKER + "/targets-request";
     public static final String SEND_TARGET = FULL_SERVER_PATH + WORKER + "/send-target";
+    public static final String LIGHT_W_EXEC = FULL_SERVER_PATH + WORKER + "/light-worker-exec";
 
 }

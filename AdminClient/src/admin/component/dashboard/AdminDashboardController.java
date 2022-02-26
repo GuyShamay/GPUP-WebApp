@@ -330,14 +330,8 @@ public class AdminDashboardController implements Closeable {
     void createTaskFromTaskButtonClicked(ActionEvent event) {
         if (tasksComponentController.getSelectedTaskName() != null) {
             if (tasksComponentController.taskRunType()) {
-                if (true) // check if the task is successfully ended && not incremental
-                {
-                    tasksComponentController.createTask(tasksComponentController.getSelectedTaskName());
-                    actionsPressed.set(false);
-                } else {
-                    tasksComponentController.updateTasksListMsgLabel("Can't run incremental for successfully finished task", true);
-
-                }
+                tasksComponentController.createTask();
+                actionsPressed.set(false);
             } else {
                 tasksComponentController.updateTasksListMsgLabel("Please Select From Scratch / Incremental", true);
             }
@@ -411,7 +405,7 @@ public class AdminDashboardController implements Closeable {
         usersListComponentController.pauseRefresher();
     }
 
-    public void setActionsPressed(boolean res){
+    public void setActionsPressed(boolean res) {
         actionsPressed.set(res);
     }
 }

@@ -10,6 +10,9 @@ import java.util.List;
 public class RunExecutionDTO {
     private String status;
     private Double progress;
+
+    private int workers;
+
     // Get from Execution's ProgressData:
     private ObservableList<String> frozen;
     private ObservableList<String> waiting;
@@ -23,7 +26,7 @@ public class RunExecutionDTO {
         ProgressData progressData = execution.getProgressData();
         this.status = execution.getStatus().name();
         this.progress = execution.getProgress();
-
+        this.workers = execution.getCurrentWorkersCount();
         this.frozen = FXCollections.observableArrayList(progressData.getFrozen());
         this.waiting = FXCollections.observableArrayList(progressData.getWaiting());
         this.inProcess = FXCollections.observableArrayList(progressData.getInprocces());
@@ -31,12 +34,21 @@ public class RunExecutionDTO {
         this.failure = FXCollections.observableArrayList(progressData.getFailure());
         this.success = FXCollections.observableArrayList(progressData.getSuccess());
         this.warnings = FXCollections.observableArrayList(progressData.getWarning());
+
     }
 
     public RunExecutionDTO() {
     }
 
     // Setters and Getters:
+    public void setWorkers(int workers) {
+        this.workers = workers;
+    }
+
+    public int getWorkers() {
+        return workers;
+    }
+
     public Double getProgress() {
         return progress;
     }

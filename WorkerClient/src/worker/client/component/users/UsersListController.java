@@ -62,13 +62,9 @@ public class UsersListController implements Closeable {
     }
 
     public void startListRefresher() {
-        listRefresher = new UsersListRefresher(autoUpdate, this::updateUsersList, this::updateErrorLabel);
+        listRefresher = new UsersListRefresher(autoUpdate, this::updateUsersList);
         timer = new Timer();
         timer.schedule(listRefresher, REFRESH_RATE, REFRESH_RATE);
-    }
-
-    private void updateErrorLabel(String s) {
-        Platform.runLater(() -> errorMessageLabel.setText(s));
     }
 
     public void resumeRefresher() {

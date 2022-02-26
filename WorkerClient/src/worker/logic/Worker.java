@@ -1,9 +1,11 @@
 package worker.logic;
 
+import dto.execution.LightWorkerExecution;
 import dto.target.FinishResultDTO;
 import dto.target.FinishedTargetDTO;
 import dto.target.NewExecutionTargetDTO;
 
+import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
@@ -14,10 +16,7 @@ import worker.client.util.Constants;
 import worker.client.util.HttpClientUtil;
 import worker.logic.target.TargetStatus;
 import worker.logic.target.TaskTarget;
-import worker.logic.task.TargetsRequestRefresher;
-import worker.logic.task.Task;
-import worker.logic.task.WorkerExecution;
-import worker.logic.task.WorkerExecutionStatus;
+import worker.logic.task.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -31,6 +30,7 @@ import static worker.client.util.Constants.TARGET_REQ_REFRESH_RATE;
 
 public class Worker {
     private String name;
+    private boolean isAlive;
     private int threadsCount;
     private final IntegerProperty credit;
     private final IntegerProperty busyThreads;
@@ -38,13 +38,14 @@ public class Worker {
     private Map<String, WorkerExecution> workerExecutions; // list of registered tasks
     private final List<TaskTarget> targets;
     private Map<WorkerExecution, List<TaskTarget>> targetsPerExec;
-    private TargetsRequestRefresher refresher;
-    private Timer timer;
-    private boolean isAlive;
+    private Thread threadsManager;
 
-    //private List<ExecutionDTO> listedExecutions;
-    // for task table in tasks screen:
-    //              http req from engine: getExecutionByWorker
+    private Timer targetsRequestTimer;
+    private Timer lightWorkerExecTimer;
+    private TargetsRequestRefresher targetsRequestRefresher;
+    private LightWorkerExecutionRefresher lightWorkerExecutionRefresher;
+
+
     public Worker() {
         credit = new SimpleIntegerProperty(0);
         busyThreads = new SimpleIntegerProperty(0);
@@ -53,13 +54,23 @@ public class Worker {
         workerExecutions = new HashMap<>();
         targetsPerExec = new HashMap<>();
         isAlive = true;
+        threadsManager = new Thread(() -> executorManager());
+    }
+
+    private void executorManager() {
+        while (isAlive) {
+            int active = ((ThreadPoolExecutor) threadsExecutor).getActiveCount();
+            if (busyThreads.get() != active)
+                Platform.runLater(() -> busyThreads.set(active));
+        }
+        System.out.println("about to die");
     }
 
     public IntegerProperty busyThreadsProperty() {
         return busyThreads;
     }
 
-    public ObservableList<TaskTarget> getTargets() {
+    public ObservableList<TaskTarget> getObservableTargets() {
         return FXCollections.observableArrayList(targets);
     }
 
@@ -83,10 +94,6 @@ public class Worker {
         this.name = name;
     }
 
-    public int getBusyThreads() {
-        return busyThreads.get();
-    }
-
     public int getThreadsCount() {
         return threadsCount;
     }
@@ -94,8 +101,9 @@ public class Worker {
     public void initThreadsExecutor(int threadsCount) {
         this.threadsCount = threadsCount;
         threadsExecutor = Executors.newFixedThreadPool(this.threadsCount);
-        startRefresher();
-        // new Thread(() -> run()).start();
+        threadsManager.start();
+        startRequestRefresher();
+        startLightRefresher();
     }
 
     public boolean isRegisterAny() {
@@ -112,40 +120,13 @@ public class Worker {
         return new ArrayList<>(workerExecutions.keySet());
     }
 
-    public void run() {
-        List<Future<?>> futures = new ArrayList<>();
-
-        while (isAlive) {
-
-            for (WorkerExecution execution : workerExecutions.values()) {
-                if (!targetsPerExec.get(execution).isEmpty()) {
-                    TaskTarget taskTarget = targetsPerExec.get(execution).remove(0);
-                    if (taskTarget.getStatus() == null) {
-                        taskTarget.setStatus(TargetStatus.InProcess);
-                        Runnable r = () -> {
-                            busyThreads.add(1);
-                            try {
-                                runTaskOnTarget(taskTarget, execution.getTask());
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                            busyThreads.subtract(1);
-                        };
-                        Future<?> f = threadsExecutor.submit(r);
-                        futures.add(f);
-                    }
-                }
-            }
-        }
-    }
-
     public void runTaskOnTarget(TaskTarget target, Task task) throws InterruptedException {
         System.out.println(target.getName() + " / " + target.getExecutionName() + ": DONE");
 
         /// implement task - compilation and simulation
 
         task.run(target);
-        FinishedTargetDTO finishedTarget = new FinishedTargetDTO(target.getName(), target.getExecutionName(), target.getLogs(), this.name, FinishResultDTO.valueOf(target.getStatus().toString()));
+        FinishedTargetDTO finishedTarget = new FinishedTargetDTO(target.getName(), target.getExecutionName(), target.getLogs(), this.name, FinishResultDTO.valueOf(target.getStatus().toString()), target.getProcessingTime());
         System.out.println("---------------------------------------------------------" + finishedTarget.toString());
         String finishedTargetAsString = GSON_INST.toJson(finishedTarget);
         RequestBody body = RequestBody.create(finishedTargetAsString, MediaType.parse("application/json"));
@@ -163,10 +144,26 @@ public class Worker {
 
     }
 
-    public void startRefresher() {
-        refresher = new TargetsRequestRefresher(this, this::acceptTargets);
-        timer = new Timer();
-        timer.schedule(refresher, TARGET_REQ_REFRESH_RATE, TARGET_REQ_REFRESH_RATE);
+    public void startRequestRefresher() {
+        targetsRequestRefresher = new TargetsRequestRefresher(this, this::acceptTargets);
+        targetsRequestTimer = new Timer();
+        targetsRequestTimer.schedule(targetsRequestRefresher, TARGET_REQ_REFRESH_RATE, TARGET_REQ_REFRESH_RATE);
+    }
+
+    public void startLightRefresher() {
+        lightWorkerExecutionRefresher = new LightWorkerExecutionRefresher(this::updateWorkerExecutions);
+        lightWorkerExecTimer = new Timer();
+        lightWorkerExecTimer.schedule(lightWorkerExecutionRefresher, CONTROL_REFRESH_RATE, CONTROL_REFRESH_RATE);
+    }
+
+    private void updateWorkerExecutions(List<LightWorkerExecution> lightWorkerExecutions) {
+        lightWorkerExecutions.forEach(lightExec -> {
+            synchronized (this) {
+                WorkerExecution workerExecution = workerExecutions.get(lightExec.getName());
+                workerExecution.setProgress(lightExec.getProgress());
+                workerExecution.setWorkersCount(lightExec.getWorkers());
+            }
+        });
     }
 
     private void acceptTargets(List<NewExecutionTargetDTO> newTargets) {
@@ -180,35 +177,37 @@ public class Worker {
 
             synchronized (this) {
                 targets.add(target);
-                target.setStatus(TargetStatus.InProcess);
-                Runnable r = () -> {
-                    busyThreads.add(1);
-                    try {
-                        runTaskOnTarget(target, workerExecution.getTask());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    busyThreads.subtract(1);
-                };
-                Future<?> f = threadsExecutor.submit(r);
             }
+            target.setStatus(TargetStatus.InProcess);
+            Runnable r = () -> {
+                Platform.runLater(() -> busyThreads.set(((ThreadPoolExecutor) threadsExecutor).getActiveCount()));
+//                    Platform.runLater(() -> busyThreads.add(1));
+                System.out.println(Thread.currentThread().getName());
+                try {
+                    runTaskOnTarget(target, workerExecution.getTask());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                busyThreads.subtract(1);
+//                    Platform.runLater(() -> busyThreads.subtract(1));
+            };
+            Future<?> f = threadsExecutor.submit(r);
+
             // targetsPerExec.get(workerExecution).add(target);
         });
-    }
-
-    public boolean isAvailableThreads() {
-        return (threadsCount - ((ThreadPoolExecutor) threadsExecutor).getActiveCount() > 0);
     }
 
     public Set<String> getWorkerExecutions() {
         return workerExecutions.keySet();
     }
 
-    public void shutdown() {
+    public void shutdown() throws InterruptedException {
         isAlive = false;
-        if (refresher != null && timer != null) {
-            refresher.cancel();
-            timer.cancel();
+        if (targetsRequestRefresher != null && targetsRequestTimer != null) {
+            threadsManager.join();
+            System.out.println("die");
+            targetsRequestRefresher.cancel();
+            targetsRequestTimer.cancel();
         }
         threadsExecutor.shutdownNow();
     }
@@ -233,6 +232,14 @@ public class Worker {
 
     public ObservableList<WorkerExecution> getObservableWorkerExecutions() {
         return FXCollections.observableArrayList(workerExecutions.values());
+    }
+
+    public void pauseLightRefresher() {
+        lightWorkerExecutionRefresher.pause();
+    }
+
+    public void resumeLightRefresher() {
+        lightWorkerExecutionRefresher.resume();
     }
 
 
