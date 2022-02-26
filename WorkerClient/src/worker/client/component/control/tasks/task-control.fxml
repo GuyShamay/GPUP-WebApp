@@ -11,7 +11,6 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="300.0" minWidth="400.0" prefHeight="500.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="worker.client.component.control.tasks.TaskControlController">
    <left>
       <AnchorPane prefHeight="500.0" prefWidth="142.0" BorderPane.alignment="CENTER">
@@ -45,7 +44,7 @@
                   <TableView fx:id="tasksTable" minHeight="300.0" minWidth="400.0" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="1" GridPane.rowSpan="2">
                     <columns>
                       <TableColumn fx:id="nameCol" prefWidth="75.0" text="Name" />
-                      <TableColumn fx:id="statusCol" maxWidth="120.0" minWidth="120.0" prefWidth="120.0" text="Status" />
+                      <TableColumn fx:id="statusCol" maxWidth="120.0" minWidth="120.0" prefWidth="120.0" text="My Status" />
                         <TableColumn fx:id="workersCol" maxWidth="76.0" minWidth="76.0" prefWidth="76.0" text="Workers" />
                         <TableColumn fx:id="progressCol" maxWidth="75.0" minWidth="75.0" prefWidth="75.0" text="Progress" />
                         <TableColumn fx:id="processedTargetsCol" prefWidth="75.0" text="Processed Targets" />

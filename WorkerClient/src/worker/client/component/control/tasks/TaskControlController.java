@@ -58,9 +58,12 @@ public class TaskControlController {
     public void initialize() {
         actionsButton.disableProperty().bind(actionsPressed);
         cancelButton.disableProperty().bind(actionsPressed.not());
-        unregisterButton.disableProperty().bind(actionsPressed.not());
-        resumeButton.visibleProperty().bind(isSelectedPaused.and(actionsPressed));
-        pauseButton.visibleProperty().bind(isSelectedPaused.not().and(actionsPressed));
+//        unregisterButton.disableProperty().bind(actionsPressed.not());
+//        resumeButton.visibleProperty().bind(isSelectedPaused.and(actionsPressed));
+//        pauseButton.visibleProperty().bind(isSelectedPaused.not().and(actionsPressed));
+        //unregisterButton.disableProperty().bind(actionsPressed.not());
+        resumeButton.visibleProperty().bind(isSelectedPaused);
+        pauseButton.visibleProperty().bind(isSelectedPaused.not());
 
         tasksTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         tasksTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
@@ -68,6 +71,9 @@ public class TaskControlController {
                 selectedTaskName = null;
                 isSelectedPaused.set(false);
             } else {
+                controlPanelController.pauseTasksControlRefresher();
+
+                //
                 selectedTaskName = newValue.getName();
                 if (worker.getWorkerExecutionStatus(selectedTaskName).equals(WorkerExecutionStatus.Paused)) {
                     isSelectedPaused.set(true);
@@ -105,6 +111,9 @@ public class TaskControlController {
 
     @FXML
     void pauseButtonClicked(ActionEvent event) {
+        if (selectedTaskName == null) {
+            return;
+        }
         worker.pauseWorkerExecution(selectedTaskName);
         controlPanelController.resumeTasksControlRefresher();
         actionsPressed.set(false);
@@ -112,6 +121,9 @@ public class TaskControlController {
 
     @FXML
     void resumeButtonClicked(ActionEvent event) {
+        if (selectedTaskName == null) {
+            return;
+        }
         worker.resumeWorkerExecution(selectedTaskName);
         controlPanelController.resumeTasksControlRefresher();
         actionsPressed.set(false);
@@ -120,7 +132,9 @@ public class TaskControlController {
     @FXML
     void unregisterButtonClicked(ActionEvent event) {
         ///// Alert Pop Up!!!!!
-
+        if (selectedTaskName == null) {
+            return;
+        }
         if (TaskUtil.confirmationAlert("Unregister Task", "Are you sure you want to unregister task: " + selectedTaskName + "?")) {
             worker.unregisterWorkerExecution(selectedTaskName);
             controlPanelController.resumeTasksControlRefresher();

@@ -196,6 +196,8 @@ public class TaskControlController implements Closeable {
         updateTaskControlMsgLabel(status, false);
         if (Objects.equals(status, "Stopped") || Objects.equals(status, "Done")) {
             isEnded.set(true);
+            isRunning.set(false);
+            resumeButton.setVisible(false);
             runTaskAutoUpdate.set(false); // stop the refresher
             //
             // Ask from server the task results
