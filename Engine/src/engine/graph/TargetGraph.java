@@ -406,5 +406,13 @@ public class TargetGraph implements Cloneable {
         return targetMap.values().stream().allMatch(target -> target.getRunResult()==RunResult.FINISHED||target.getRunResult()==RunResult.SKIPPED);
     }
 
+    public void setDependsOnList(Map<String, List<Target>> dependsOn) {
+        dependsOnGraph=dependsOn;
+    }
+
+    public void setTargetMap(Map<String, Target> targetMap) {
+        this.targetMap=targetMap;
+    }
+
     //----------------------------------------------------------------------------------------
 }
