@@ -282,7 +282,7 @@ public class TargetGraph implements DirectableGraph, GraphActions {
 
     public boolean isAllAdjOfTargetFinishedWithoutFailure(oldTarget target) {
         if (isAllAdjOfTargetFinished(target)) {
-            return dependsOnGraph.get(target.getName()).stream().allMatch(t -> (t.getFinishResult().equals(FinishResult.SUCCESS) || t.getFinishResult().equals(FinishResult.WARNING)));
+            return dependsOnGraph.get(target.getName()).stream().allMatch(t -> (t.getFinishResult().equals(oldFinishResult.SUCCESS) || t.getFinishResult().equals(oldFinishResult.WARNING)));
         } else {
             return false;
         }
@@ -326,7 +326,7 @@ public class TargetGraph implements DirectableGraph, GraphActions {
     private void updateTargetIncremental() {
         targetMap.forEach(((s, target) -> {
             if (target.getRunResult().equals(RunResult.FINISHED)) {
-                if (target.getFinishResult().equals(FinishResult.FAILURE)) {
+                if (target.getFinishResult().equals(oldFinishResult.FAILURE)) {
                     if (isAllAdjOfTargetFinishedWithoutFailure(target)) {
                         target.setFinishResult(null);
                         target.setRunResult(RunResult.WAITING);

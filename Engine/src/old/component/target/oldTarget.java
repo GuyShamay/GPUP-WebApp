@@ -12,7 +12,7 @@ public class oldTarget {
     private List<oldTarget> dependsOnList;
     private TargetType type;
     private RunResult runResult;
-    private FinishResult finishResult;
+    private oldFinishResult finishResult;
     private List<oldTarget> justOpenedList = new ArrayList<>();
     private List<oldTarget> skippedList = new ArrayList<>();
     private Duration taskRunDuration;
@@ -42,7 +42,7 @@ public class oldTarget {
         return runResult;
     }
 
-    public FinishResult getFinishResult() {
+    public oldFinishResult getFinishResult() {
         return finishResult;
     }
 
@@ -74,7 +74,7 @@ public class oldTarget {
         this.runResult = runResult;
     }
 
-    public void setFinishResult(FinishResult finishResult) {
+    public void setFinishResult(oldFinishResult finishResult) {
         this.finishResult = finishResult;
     }
 
@@ -90,7 +90,7 @@ public class oldTarget {
     //GPUP1 func
     public boolean isAllAdjFinishedWithoutFailure() {
         if (isAllAdjFinished()) {
-            return dependsOnList.stream().allMatch(target -> (target.getFinishResult().equals(FinishResult.SUCCESS) || target.getFinishResult().equals(FinishResult.WARNING)));
+            return dependsOnList.stream().allMatch(target -> (target.getFinishResult().equals(oldFinishResult.SUCCESS) || target.getFinishResult().equals(oldFinishResult.WARNING)));
         } else {
             return false;
         }
@@ -200,7 +200,7 @@ public class oldTarget {
     public List<oldTarget> getSkippedBecauseList() {
         final List<oldTarget> res = new ArrayList<>();
         dependsOnList.forEach(target -> {
-            if(target.getFinishResult()==FinishResult.FAILURE)
+            if(target.getFinishResult()== oldFinishResult.FAILURE)
                 res.add(target);
         });
 

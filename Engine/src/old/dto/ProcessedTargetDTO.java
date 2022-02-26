@@ -1,6 +1,6 @@
 package old.dto;
 
-import old.component.target.FinishResult;
+import old.component.target.oldFinishResult;
 import old.component.target.oldTarget;
 
 import java.util.List;
@@ -8,7 +8,7 @@ import java.util.List;
 public class ProcessedTargetDTO implements GPUPConsumer {
     private final String name;
     private final String userData;
-    private final FinishResult finishResult;
+    private final oldFinishResult finishResult;
     private final String justOpenedList;
     private final String justSkippedList;
     private TaskOutputDTO taskOutput;
@@ -49,7 +49,7 @@ public class ProcessedTargetDTO implements GPUPConsumer {
         output.append(taskOutput.toString());
         output.append("Target Data:\n   ").append(userData).append("\n");
         output.append("FINISH process target: ").append(name).append("\n");
-        if (finishResult.equals(FinishResult.WARNING)) {
+        if (finishResult.equals(oldFinishResult.WARNING)) {
             output.append("Target -").append(name).append("- finished with: SUCCESS WITH ").append(finishResult).append("\n");
         } else {
             output.append("Target -").append(name).append("- finished with: ").append(finishResult).append("\n");

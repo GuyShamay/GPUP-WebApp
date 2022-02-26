@@ -186,7 +186,7 @@ public class GPUPEngine implements Engine {
 
     private boolean hasGoodRunResult(String s) {
         oldTarget t = targetGraph.getTargetsMap().get(s);
-        if (t.getRunResult() == RunResult.FINISHED && (t.getFinishResult() == FinishResult.SUCCESS || t.getFinishResult() == FinishResult.WARNING)) {
+        if (t.getRunResult() == RunResult.FINISHED && (t.getFinishResult() == oldFinishResult.SUCCESS || t.getFinishResult() == oldFinishResult.WARNING)) {
             return true;
         }
         return false;
@@ -364,7 +364,7 @@ public class GPUPEngine implements Engine {
             currentTarget.setFinishResult(task.run(currentTarget.getName(), currentTarget.getUserData()));
             currentTarget.setRunResult(RunResult.FINISHED);
 
-            if (currentTarget.getFinishResult() == FinishResult.FAILURE) {
+            if (currentTarget.getFinishResult() == oldFinishResult.FAILURE) {
                 targetGraph.dfsTravelToUpdateSkippedList(currentTarget);
                 targetGraph.updateTargetAdjAfterFinishWithFailure(currentTarget);
             } else {

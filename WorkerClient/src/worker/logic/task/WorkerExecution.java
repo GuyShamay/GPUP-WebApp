@@ -134,7 +134,7 @@ public class WorkerExecution {
 
         task.run(target);
         FinishedTargetDTO finishedTarget = new FinishedTargetDTO(target.getName(), target.getExecutionName(), target.getLogs(), this.name, FinishResultDTO.valueOf(target.getStatus().toString()));
-
+        System.out.println("---------------------------------------------------------"+finishedTarget.toString());
         String finishedTargetAsString = GSON_INST.toJson(finishedTarget);
         RequestBody body = RequestBody.create(finishedTargetAsString, MediaType.parse("application/json"));
 
@@ -148,5 +148,9 @@ public class WorkerExecution {
 
             }
         });
+    }
+
+    public Task getTask() {
+        return task;
     }
 }

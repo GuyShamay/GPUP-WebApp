@@ -1,6 +1,6 @@
 package old.dto;
 
-import old.component.target.FinishResult;
+import old.component.target.oldFinishResult;
 import old.component.target.RunResult;
 import old.component.target.oldTarget;
 import old.component.target.TargetType;
@@ -15,7 +15,7 @@ public class TargetDTO {
     private List<String> dependsOnList;
     private final TargetType type;
     private final RunResult runResult;
-    private final FinishResult finishResult;
+    private final oldFinishResult finishResult;
 
     public TargetDTO(oldTarget target) {
         name = target.getName();
@@ -48,7 +48,7 @@ public class TargetDTO {
         return runResult;
     }
 
-    public FinishResult getFinishResult() {
+    public oldFinishResult getFinishResult() {
         return finishResult;
     }
 

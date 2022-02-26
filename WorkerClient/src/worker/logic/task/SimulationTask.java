@@ -25,8 +25,9 @@ public class SimulationTask implements Task{
     }
 
     public void run(TaskTarget target) throws InterruptedException {
+
         float LuckyNumber = (float) Math.random();
-       String runningLogs = "";
+        String runningLogs = "";
         calcSingleTargetProcessingTimeInMs();
         runningLogs +=target.getName() + ": Sleeping Time - " + sleepingTime + "\n";
 

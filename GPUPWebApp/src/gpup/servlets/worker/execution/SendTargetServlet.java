@@ -3,6 +3,7 @@ package gpup.servlets.worker.execution;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import dto.target.FinishResultDTO;
 import dto.target.FinishedTargetDTO;
 import engine.NewEngine;
 import gpup.util.ServletUtils;
@@ -16,7 +17,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Scanner;
 
-@WebServlet(name = "SendTargetServlet", urlPatterns = {"/worker/send-targets"})
+@WebServlet(name = "SendTargetServlet", urlPatterns = {"/worker/send-target"})
 public class SendTargetServlet extends HttpServlet {
     
     @Override
@@ -33,12 +34,13 @@ public class SendTargetServlet extends HttpServlet {
             FinishedTargetDTO finishedTarget = parseBodyToFinishedTarget(reqBodyAsString);
             NewEngine engine = ServletUtils.getEngine(getServletContext());
             engine.setFinishedTarget(finishedTarget);
-        }else{
-            PrintWriter out = resp.getWriter();
-            String errorMessage = "You didnt send target! ";
-            resp.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
-            out.println(errorMessage);
-            out.flush();
+        } else {
+            try (PrintWriter out = resp.getWriter()) {
+                String errorMessage = "You didnt send target! ";
+                resp.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+                out.println(errorMessage);
+                out.flush();
+            }
         }
     }
 
@@ -48,13 +50,13 @@ public class SendTargetServlet extends HttpServlet {
             if(jsonObject.has("name"))
                 target.setName(jsonObject.get("name").getAsString());
             if(jsonObject.has("executionName"))
-                target.setName(jsonObject.get("executionName").getAsString());
+                target.setExecutionName(jsonObject.get("executionName").getAsString());
             if(jsonObject.has("logs"))
-                target.setName(jsonObject.get("logs").getAsString());
+                target.setLogs(jsonObject.get("logs").getAsString());
             if(jsonObject.has("worker"))
-                target.setName(jsonObject.get("worker").getAsString());
+                target.setWorker(jsonObject.get("worker").getAsString());
             if(jsonObject.has("finishResult"))
-                target.setName(jsonObject.get("finishResult").getAsString());
+                target.setFinishResult(FinishResultDTO.valueOf(jsonObject.get("finishResult").getAsString()));
 
         return target;
     }

@@ -15,6 +15,7 @@ import worker.client.util.HttpClientUtil;
 import worker.logic.target.TargetStatus;
 import worker.logic.target.TaskTarget;
 import worker.logic.task.TargetsRequestRefresher;
+import worker.logic.task.Task;
 import worker.logic.task.WorkerExecution;
 
 import java.io.IOException;
@@ -35,7 +36,7 @@ public class Worker {
     private ExecutorService threadsExecutor;
     private Map<String, WorkerExecution> workerExecutions; // list of registered tasks
     private final List<TaskTarget> targets;
-
+    private Map<WorkerExecution,List<TaskTarget>> targetsPerExec;
     private TargetsRequestRefresher refresher;
     private boolean isAlive;
 
@@ -49,6 +50,7 @@ public class Worker {
         threadsCount = 0;
         targets = new ArrayList<>();
         workerExecutions = new HashMap<>();
+        targetsPerExec = new HashMap<>();
         isAlive = true;
     }
 
@@ -101,6 +103,7 @@ public class Worker {
 
     public synchronized void addExecution(WorkerExecution workerExecution) {
         workerExecutions.put(workerExecution.getName(), workerExecution);
+        targetsPerExec.put(workerExecution, new ArrayList<>());
     }
 
 
@@ -112,23 +115,47 @@ public class Worker {
         List<Future<?>> futures = new ArrayList<>();
 
         while (isAlive) {
-            workerExecutions.forEach((s, exec) -> {
-                        targets.forEach(taskTarget -> {
-                            if (taskTarget.getStatus() == null && taskTarget.getExecutionName().equals(exec.getName())) {
-                                taskTarget.setStatus(TargetStatus.InProcess);
-                                Runnable r = () -> {
-                                    try {
-                                        exec.runTaskTarget(taskTarget);
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-                                };
-                                Future<?> f = threadsExecutor.submit(r);
-                                futures.add(f);
+            for(WorkerExecution execution: workerExecutions.values()) {
+                if (!targetsPerExec.get(execution).isEmpty()) {
+                    TaskTarget taskTarget = targetsPerExec.get(execution).remove(0);
+                    if (taskTarget.getStatus() == null) {
+                        taskTarget.setStatus(TargetStatus.InProcess);
+                        Runnable r = () -> {
+                            try {
+                                runTaskOnTarget(taskTarget,execution.getTask());
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
-                        });
-                    });
+                        };
+                        Future<?> f = threadsExecutor.submit(r);
+                        futures.add(f);
+                    }
+                }
+            }
         }
+    }
+
+    public void runTaskOnTarget(TaskTarget target, Task task) throws InterruptedException {
+        System.out.println(target.getName() + " / " + target.getExecutionName() + ": DONE");
+
+        /// implement task - compilation and simulation
+
+        task.run(target);
+        FinishedTargetDTO finishedTarget = new FinishedTargetDTO(target.getName(), target.getExecutionName(), target.getLogs(), this.name, FinishResultDTO.valueOf(target.getStatus().toString()));
+        System.out.println("---------------------------------------------------------"+finishedTarget.toString());
+        String finishedTargetAsString = GSON_INST.toJson(finishedTarget);
+        RequestBody body = RequestBody.create(finishedTargetAsString, MediaType.parse("application/json"));
+
+        HttpClientUtil.runAsyncWithBody(Constants.SEND_TARGET, body, new Callback() {
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+            }
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                String s = response.body().string();
+            }
+        });
     }
 
     public void startRefresher() {
@@ -145,6 +172,7 @@ public class Worker {
             target.setStatus(null);
             // maybe add configDTO
             targets.add(target);
+            targetsPerExec.get(workerExecution).add(target);
         });
     }
 

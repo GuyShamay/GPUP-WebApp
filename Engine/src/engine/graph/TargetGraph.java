@@ -3,13 +3,8 @@ package engine.graph;
 import dto.execution.config.ExecutionConfigDTO;
 import dto.target.TargetDTO;
 import engine.progressdata.ProgressData;
-import engine.target.RunResult;
-import engine.target.Target;
-import engine.target.TargetType;
-import engine.target.TargetsRelationType;
-import javafx.application.Platform;
-import old.component.target.FinishResult;
-import old.component.target.oldTarget;
+import engine.target.*;
+import old.component.target.oldFinishResult;
 
 import java.util.*;
 
@@ -376,7 +371,7 @@ public class TargetGraph implements Cloneable {
     }
 
     private boolean isAllAdjOfTargetFinished(Target target) {
-        return dependsOnGraph.get(target.getName()).stream().allMatch(t -> (t.getRunResult().equals(old.component.target.RunResult.FINISHED)));
+        return dependsOnGraph.get(target.getName()).stream().allMatch(t -> (t.getRunResult().equals(RunResult.FINISHED)));
     }
 
     public void updateTargetAdjAfterFinishWithoutFailure(ProgressData progressData, List<Target> waitingList, Target currentTarget) {
@@ -386,7 +381,7 @@ public class TargetGraph implements Cloneable {
                     currentTarget.addToJustOpenedList(target);
                 if (isAllAdjOfTargetFinishedWithoutFailure(target)) {
                     target.setRunResult(RunResult.WAITING);
-                    Platform.runLater(() -> progressData.move(RunResult.FROZEN, RunResult.WAITING, target.getName()));
+                    progressData.move(RunResult.FROZEN, RunResult.WAITING, target.getName());
                     if (!waitingList.contains(target)) {
                         waitingList.add(target);
                         //target.setStartWaitingTime();
