@@ -4,7 +4,6 @@ public class CompilationConfigDTO implements ConfigDTO {
     private String destDir;
     private String srcDir;
 
-
     public String getSrcDir() {
         return srcDir;
     }

@@ -1,8 +1,8 @@
 package old.dto;
 
-import old.component.target.FinishResult;
+import old.component.target.oldFinishResult;
 import old.component.target.RunResult;
-import old.component.target.Target;
+import old.component.target.oldTarget;
 import old.component.target.TargetType;
 
 import java.util.ArrayList;
@@ -15,9 +15,9 @@ public class TargetDTO {
     private List<String> dependsOnList;
     private final TargetType type;
     private final RunResult runResult;
-    private final FinishResult finishResult;
+    private final oldFinishResult finishResult;
 
-    public TargetDTO(Target target) {
+    public TargetDTO(oldTarget target) {
         name = target.getName();
         type = target.getType();
         userData = target.getUserData();
@@ -48,13 +48,13 @@ public class TargetDTO {
         return runResult;
     }
 
-    public FinishResult getFinishResult() {
+    public oldFinishResult getFinishResult() {
         return finishResult;
     }
 
-    private List<String> updateList(List<Target> targetList) {
+    private List<String> updateList(List<oldTarget> targetList) {
         List<String> list = new ArrayList<>();
-        for (Target t : targetList) {
+        for (oldTarget t : targetList) {
             list.add(t.getName());
         }
         return list;

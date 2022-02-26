@@ -1,5 +1,5 @@
 package old.dto;
-import old.component.target.Target;
+import old.component.target.oldTarget;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +54,7 @@ public class StatisticsDTO implements GPUPConsumer {
     }
 
     // will be called by the engine when task is done
-    public void updateTaskResults(List<Target> targets, Duration totalDuration) {
+    public void updateTaskResults(List<oldTarget> targets, Duration totalDuration) {
         this.targets = new ArrayList<>();
         targets.forEach(((target) -> {
             this.targets.add(new TargetDTO(target));

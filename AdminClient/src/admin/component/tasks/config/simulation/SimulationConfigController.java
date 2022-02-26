@@ -37,7 +37,7 @@ public class SimulationConfigController{
                 simulationConfig.setIsRandom(randomCheckBox.isSelected());
                 simulationConfig.setSuccessProb((float) successSpinner.getValue() / 100);
                 simulationConfig.setSuccessWithWarningsProb((float) warningSpinner.getValue() / 100);
-                warningLabel.setText("Success!");
+                warningLabel.setText("UGUSuccess!");
                 taskController.updateConfig(simulationConfig);
                 submitButton.setDisable(true);
                 taskController.showFinalSubmit();
