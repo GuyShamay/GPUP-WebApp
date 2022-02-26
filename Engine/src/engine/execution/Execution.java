@@ -10,8 +10,6 @@ import engine.target.FinishResult;
 import engine.target.Result;
 import engine.target.RunResult;
 import engine.target.Target;
-import old.component.target.TargetType;
-import old.component.target.oldTarget;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -30,10 +28,9 @@ public class Execution {
     private final List<String> workers;
     private ConfigDTO executionDetails;
     private ProgressData progressData;
+    private List<String> logs;
 
     // Run Execution Managing Fields: (Not pass by DTO)
-    private boolean pause; // RESUME -> to false, PAUSE -> to true
-    private boolean play; // STOP -> to false, PLAY -> to true
     private boolean isStarted; // PLAY -> to true
     private List<Target> waitingList;
     private Set<Target> doneTargets;
@@ -44,9 +41,8 @@ public class Execution {
         progress = 0;
         progressData = new ProgressData();
         workers = new ArrayList<>();
-        play = false;
-        pause = false;
-        doneTargets=new HashSet<>();
+        doneTargets = new HashSet<>();
+        logs = new ArrayList<>();
     }
 
 
@@ -154,9 +150,9 @@ public class Execution {
         }
     }
 
-    public void checkValidIncremental() {
+    public boolean checkValidIncremental() {
         // if incremental chosen, and all targets are finished -> from scratch
-        taskGraph.checkValidIncremental();
+        return taskGraph.checkValidIncremental();
     }
 
     public ProgressData getProgressData() {
@@ -169,12 +165,11 @@ public class Execution {
     }
 
     public boolean isAllowedToPlay() {
-        return !isStarted;
+        return status == ExecutionStatus.Paused|status == ExecutionStatus.New;
     }
 
     private void initialize() {
         if (!taskGraph.hasCircuit()) {
-            play = true;
             status = ExecutionStatus.Active;
             taskGraph.getTargetsListByName().forEach(targetName -> progressData.initToFrozen(targetName));
             taskGraph.buildTransposeGraph();
@@ -187,38 +182,36 @@ public class Execution {
     }
 
     public void stop() {
-        play = false;
         status = ExecutionStatus.Stopped;
         System.out.println("stopped");
-
     }
 
     public void pause() {
-        pause = true;
         status = ExecutionStatus.Paused;
         System.out.println("paused");
     }
 
     public void resume() {
-        pause = false;
         status = ExecutionStatus.Active;
         System.out.println("resumed");
     }
 
     public void play() {
         initialize(); // circuit ? throw runTimeException -> catch in servlet
-        isStarted = true;
-
         System.out.println("on");
 
-        while (play) {
-            while (pause) {
-                // update message: PAUSED
+       while (status.equals(ExecutionStatus.Active) || status.equals(ExecutionStatus.Paused)) {
+            if(status.equals(ExecutionStatus.Paused)) {
+               // update message: PAUSED
+                System.out.println("pauseeeeee");
+           }
+            if(taskGraph.doneProccesing()){
+                status = ExecutionStatus.Done;
+                System.out.println("need to done");
             }
-        }
+       }
 
-        System.out.println("done");
-        status = ExecutionStatus.Done;
+        System.out.println("doneeeeeeeee");
     }
 
     public synchronized List<NewExecutionTargetDTO> requestNewTargets(int threadsCount) {
@@ -234,7 +227,7 @@ public class Execution {
             for (int i = 0; i < totalToSend; i++) {
                 Target currentTarget = waitingList.remove(0);
                 changeRunResult(RunResult.WAITING, RunResult.INPROCESS, currentTarget);
-                NewExecutionTargetDTO t = new NewExecutionTargetDTO(currentTarget,this.name);
+                NewExecutionTargetDTO t = new NewExecutionTargetDTO(currentTarget, this.name);
                 list.add(t);
             }
             return list;
@@ -253,25 +246,32 @@ public class Execution {
     }
 
     public void setFinishedTarget(FinishedTargetDTO finishedTarget) {
-       Target target = taskGraph.getTargetMap().get(finishedTarget.getName());
-       target.setFinishResult(FinishResult.valueOf(finishedTarget.getFinishResult().toString()));
-       changeRunResult(RunResult.INPROCESS, target.getFinishResult(),target);
+        Target target = taskGraph.getTargetMap().get(finishedTarget.getName());
+        target.setFinishResult(FinishResult.valueOf(finishedTarget.getFinishResult().toString()));
+        changeRunResult(RunResult.INPROCESS, target.getFinishResult(), target);
+
+        // save to file
+        addFinishedTargetLog(finishedTarget.getLogs());
         updateProgressBar(target);
 
-       /////DO SOMETHING WITH LOGS
-        updateGraphAfterTaskResult(waitingList,target);
+        updateGraphAfterTaskResult(waitingList, target);
+    }
+
+    private synchronized void addFinishedTargetLog(String log) {
+        this.logs.add(log);
+
     }
 
     private synchronized void updateGraphAfterTaskResult(List<Target> waitingList, Target currentTarget) {
-            currentTarget.setRunResult(RunResult.FINISHED);
-            if (currentTarget.getFinishResult().equals(FinishResult.FAILURE)) {
-                taskGraph.dfsTravelToUpdateSkippedList(currentTarget);
-                addSkippedToDoneSet(currentTarget);
-                changeRunResultOfList(currentTarget.getSkippedList(), RunResult.FROZEN, RunResult.SKIPPED);
-                taskGraph.updateTargetAdjAfterFinishWithFailure(currentTarget);
-            } else {
-                taskGraph.updateTargetAdjAfterFinishWithoutFailure(progressData, waitingList, currentTarget);
-            }
+        currentTarget.setRunResult(RunResult.FINISHED);
+        if (currentTarget.getFinishResult().equals(FinishResult.FAILURE)) {
+            taskGraph.dfsTravelToUpdateSkippedList(currentTarget);
+            addSkippedToDoneSet(currentTarget);
+            changeRunResultOfList(currentTarget.getSkippedList(), RunResult.FROZEN, RunResult.SKIPPED);
+            taskGraph.updateTargetAdjAfterFinishWithFailure(currentTarget);
+        } else {
+            taskGraph.updateTargetAdjAfterFinishWithoutFailure(progressData, waitingList, currentTarget);
+        }
     }
 
     private synchronized void changeRunResultOfList(List<Target> skippedList, RunResult from, RunResult to) {
@@ -286,12 +286,25 @@ public class Execution {
         });
     }
 
-    private void updateProgressBar(Target target) {
+    private synchronized void updateProgressBar(Target target) {
         int sizeBefore = doneTargets.size();
         doneTargets.add(target);
-        if(sizeBefore < doneTargets.size())
+        if (sizeBefore < doneTargets.size())
             incrementProgress();
     }
 
+    public int getLogsVersions() {
+        return logs.size();
+    }
 
+    public synchronized List<String> getLogsEntries(int version) {
+        if (version < 0 || version > logs.size()) {
+            version = 0;
+        }
+        return logs.subList(version, logs.size());}
+
+    public ExecutionStatus getExecutionStatus() {
+        return status;
+
+    }
 }
