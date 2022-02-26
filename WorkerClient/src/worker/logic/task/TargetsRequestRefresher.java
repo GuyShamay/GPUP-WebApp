@@ -45,7 +45,6 @@ public class TargetsRequestRefresher extends TimerTask {
         }
 
         if(worker.isRegisterAny()) {
-
             worker.getWorkerExecutions().forEach(taskName->{
                 String finalUrl = HttpUrl
                         .parse(Constants.TARGET_REQUEST)

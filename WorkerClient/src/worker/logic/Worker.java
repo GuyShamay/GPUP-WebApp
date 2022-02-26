@@ -37,7 +37,7 @@ public class Worker {
     private ExecutorService threadsExecutor;
     private Map<String, WorkerExecution> workerExecutions; // list of registered tasks
     private final List<TaskTarget> targets;
-    private Map<WorkerExecution,List<TaskTarget>> targetsPerExec;
+    private Map<WorkerExecution, List<TaskTarget>> targetsPerExec;
     private TargetsRequestRefresher refresher;
     private Timer timer;
     private boolean isAlive;
@@ -95,7 +95,7 @@ public class Worker {
         this.threadsCount = threadsCount;
         threadsExecutor = Executors.newFixedThreadPool(this.threadsCount);
         startRefresher();
-        new Thread(() -> run()).start();
+        // new Thread(() -> run()).start();
     }
 
     public boolean isRegisterAny() {
@@ -116,17 +116,20 @@ public class Worker {
         List<Future<?>> futures = new ArrayList<>();
 
         while (isAlive) {
-            for(WorkerExecution execution: workerExecutions.values()) {
+
+            for (WorkerExecution execution : workerExecutions.values()) {
                 if (!targetsPerExec.get(execution).isEmpty()) {
                     TaskTarget taskTarget = targetsPerExec.get(execution).remove(0);
                     if (taskTarget.getStatus() == null) {
                         taskTarget.setStatus(TargetStatus.InProcess);
                         Runnable r = () -> {
+                            busyThreads.add(1);
                             try {
-                                runTaskOnTarget(taskTarget,execution.getTask());
+                                runTaskOnTarget(taskTarget, execution.getTask());
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
+                            busyThreads.subtract(1);
                         };
                         Future<?> f = threadsExecutor.submit(r);
                         futures.add(f);
@@ -143,7 +146,7 @@ public class Worker {
 
         task.run(target);
         FinishedTargetDTO finishedTarget = new FinishedTargetDTO(target.getName(), target.getExecutionName(), target.getLogs(), this.name, FinishResultDTO.valueOf(target.getStatus().toString()));
-        System.out.println("---------------------------------------------------------"+finishedTarget.toString());
+        System.out.println("---------------------------------------------------------" + finishedTarget.toString());
         String finishedTargetAsString = GSON_INST.toJson(finishedTarget);
         RequestBody body = RequestBody.create(finishedTargetAsString, MediaType.parse("application/json"));
 
@@ -157,6 +160,7 @@ public class Worker {
                 String s = response.body().string();
             }
         });
+
     }
 
     public void startRefresher() {
@@ -173,8 +177,22 @@ public class Worker {
             target.setType(workerExecution.getType());
             target.setStatus(null);
             // maybe add configDTO
-            targets.add(target);
-            targetsPerExec.get(workerExecution).add(target);
+
+            synchronized (this) {
+                targets.add(target);
+                target.setStatus(TargetStatus.InProcess);
+                Runnable r = () -> {
+                    busyThreads.add(1);
+                    try {
+                        runTaskOnTarget(target, workerExecution.getTask());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    busyThreads.subtract(1);
+                };
+                Future<?> f = threadsExecutor.submit(r);
+            }
+            // targetsPerExec.get(workerExecution).add(target);
         });
     }
 
