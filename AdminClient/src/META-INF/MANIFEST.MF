@@ -1,3 +1,5 @@
 Manifest-Version: 1.0
-Main-Class: AdminClient
+Main-Class: admin.AdminClient
+Class-Path: kotlin-stdlib-1.4.10.jar annotations-13.0.jar gson-2.8.8.jar
+  okhttp-4.9.1.jar okio-2.8.0.jar
 

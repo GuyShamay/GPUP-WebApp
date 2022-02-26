@@ -25,7 +25,7 @@ public class Constants {
     public final static String BASE_DOMAIN = "localhost";
     public final static String PORT = ":8080";
     private final static String BASE_URL = "http://" + BASE_DOMAIN + PORT;
-    private final static String CONTEXT_PATH = "/GPUPWebApp_Web_exploded";
+    private final static String CONTEXT_PATH = "/GPUPWebApp";
     private final static String FULL_SERVER_PATH = BASE_URL + CONTEXT_PATH;
     private final static String WORKER = "/worker";
     public final static String LOGIN_PAGE = FULL_SERVER_PATH + "/workerLogin";

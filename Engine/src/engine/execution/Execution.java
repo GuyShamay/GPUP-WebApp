@@ -12,12 +12,9 @@ import engine.target.FinishResult;
 import engine.target.Result;
 import engine.target.RunResult;
 import engine.target.Target;
-import old.component.target.oldFinishResult;
-import old.component.target.oldTarget;
+
 
 import java.io.*;
-import java.lang.invoke.ConstantCallSite;
-import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -41,6 +38,7 @@ public class Execution {
     private boolean isStarted; // PLAY -> to true
     private List<Target> waitingList;
     private Set<Target> doneTargets;
+    private boolean isEnded;
 
     public Execution() {
         status = ExecutionStatus.New;
@@ -155,6 +153,10 @@ public class Execution {
     public synchronized void incrementProgress() {
         if (progress < taskGraph.getCount()) {
             progress++;
+            System.out.println(progress);
+            if (progress == taskGraph.getCount()) {
+                isEnded = true;
+            }
         }
     }
 
@@ -205,11 +207,15 @@ public class Execution {
         initialize(); // circuit ? throw runTimeException -> catch in servlet
 
         while (status.equals(ExecutionStatus.Active) || status.equals(ExecutionStatus.Paused)) {
-            if (doneTargets.size() == taskGraph.getCount()) {
+            if (isAllDone()) {
                 status = ExecutionStatus.Done;
             }
         }
-        Thread.currentThread().interrupt();
+//        Thread.currentThread().interrupt();
+    }
+
+    private boolean isAllDone() {
+        return taskGraph.getTargetMap().values().stream().filter(target -> !target.getRunResult().equals(RunResult.SKIPPED) && !(target.getRunResult() == RunResult.FINISHED)).count() == 0;
     }
 
     public synchronized List<NewExecutionTargetDTO> requestNewTargets(int threadsCount) {
@@ -246,6 +252,7 @@ public class Execution {
     public void setFinishedTarget(FinishedTargetDTO finishedTarget) {
         Target target = taskGraph.getTargetMap().get(finishedTarget.getName());
         target.setFinishResult(FinishResult.valueOf(finishedTarget.getFinishResult().toString()));
+        updateProgressBar(target);
         changeRunResult(RunResult.INPROCESS, target.getFinishResult(), target);
         target.setStartRunningTime(Instant.parse(finishedTarget.getStartingTime()));
         target.setTaskRunDuration(Duration.between(target.getStartRunningTime(), Instant.now()));
@@ -354,28 +361,28 @@ public class Execution {
             }
         }
 
-            this.taskGraph = new TargetGraph(baseTaskGraph.getName(), baseTaskGraph.getCreatingUsername());
-            Map<String, List<Target>> dependsOn = new HashMap<>();
-            Map<String, Target> targetMap = new HashMap<>();
+        this.taskGraph = new TargetGraph(baseTaskGraph.getName(), baseTaskGraph.getCreatingUsername());
+        Map<String, List<Target>> dependsOn = new HashMap<>();
+        Map<String, Target> targetMap = new HashMap<>();
 
-            targets.forEach(targetName -> {
-                dependsOn.put(targetName, new LinkedList<>());
-                try {
-                    targetMap.put(targetName, baseTaskGraph.getTargetMap().get(targetName).clone());
-                } catch (CloneNotSupportedException e) {
-                    e.printStackTrace();
-                }
+        targets.forEach(targetName -> {
+            dependsOn.put(targetName, new LinkedList<>());
+            try {
+                targetMap.put(targetName, baseTaskGraph.getTargetMap().get(targetName).clone());
+            } catch (CloneNotSupportedException e) {
+                e.printStackTrace();
+            }
+        });
+
+        taskGraph.setDependsOnList(dependsOn);
+        taskGraph.setTargetMap(targetMap);
+
+        targetMap.values().forEach(target -> {
+            target.getDependsOnList().forEach(adj -> {
+                if (targets.contains(adj.getName())) taskGraph.addEdge(target.getName(), adj);
             });
-
-            taskGraph.setDependsOnList(dependsOn);
-            taskGraph.setTargetMap(targetMap);
-
-            targetMap.values().forEach(target -> {
-                target.getDependsOnList().forEach(adj -> {
-                    if (targets.contains(adj.getName())) taskGraph.addEdge(target.getName(), adj);
-                });
-            });
-        }
+        });
+    }
 
     public void prepareGraphIncremental() {
         fromScratchReset();

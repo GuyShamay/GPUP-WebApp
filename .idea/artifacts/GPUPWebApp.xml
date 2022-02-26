@@ -1,7 +1,7 @@
 <component name="ArtifactManager">
-  <artifact type="exploded-war" build-on-make="true" name="GPUPWebApp:Web exploded">
-    <output-path>$PROJECT_DIR$/out/artifacts/GPUPWebApp_Web_exploded</output-path>
-    <root id="root">
+  <artifact type="war" build-on-make="true" name="GPUPWebApp">
+    <output-path>$PROJECT_DIR$/out/artifacts/GPUPWebApp</output-path>
+    <root id="archive" name="GPUPWebApp.war">
       <element id="javaee-facet-resources" facet="GPUPWebApp/web/Web" />
       <element id="directory" name="WEB-INF">
         <element id="directory" name="classes">
@@ -18,6 +18,7 @@
           <element id="artifact" artifact-name="AdminClient:jar" />
           <element id="artifact" artifact-name="GpupDTO:jar" />
           <element id="artifact" artifact-name="Engine:jar" />
+          <element id="artifact" artifact-name="WorkerClient:jar" />
         </element>
       </element>
     </root>

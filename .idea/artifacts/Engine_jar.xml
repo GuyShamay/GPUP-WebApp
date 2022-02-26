@@ -4,6 +4,7 @@
     <root id="archive" name="Engine.jar">
       <element id="module-output" name="Engine" />
       <element id="module-output" name="GpupDTO" />
+      <element id="artifact" artifact-name="GpupDTO:jar" />
     </root>
   </artifact>
 </component>
